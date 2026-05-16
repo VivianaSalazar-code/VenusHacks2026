@@ -3,7 +3,6 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
-
 function figmaAssetResolver() {
   return {
     name: 'figma-asset-resolver',
@@ -33,4 +32,17 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
-})
+
+  // 👇 ADDED THIS SERVER BLOCK TO FORCE OPEN THE BROWSER CONNECTION 👇
+  server: {
+    host: '127.0.0.1',  // Forces React to run on http://127.0.0.1:5173
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000', // Points directly to the Uvicorn address above
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }})
