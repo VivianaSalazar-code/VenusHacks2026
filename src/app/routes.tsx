@@ -3,15 +3,17 @@ import { Layout } from "./components/Layout";
 import { Dashboard } from "./components/Dashboard";
 import { MealTracker } from "./components/MealTracker";
 import { Resources } from "./components/Resources";
+import LongitudinalHealthReport from "./components/LongitudinalHealthReport";
 
 export const router = createBrowserRouter([
-  {
-    path: "/",
-    Component: Layout,
-    children: [
-      { index: true, Component: Dashboard },
-      { path: "meal-tracker", Component: MealTracker },
-      { path: "resources", Component: Resources },
-    ],
-  },
+	{
+		path: "/",
+		Component: Layout,
+		children: [
+			{ index: true, Component: Dashboard },
+			{ path: "meal-tracker", Component: MealTracker },
+			{ path: "resources", Component: Resources },
+			{ path: "export", Component: LongitudinalHealthReport },
+		],
+	},
 ]);

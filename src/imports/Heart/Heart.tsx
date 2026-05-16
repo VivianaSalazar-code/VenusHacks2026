@@ -290,7 +290,7 @@ function Option2() {
 function Option3() {
   return (
     <div className="absolute contents left-[53.27px] top-[707.19px]" data-name="Option1">
-      <p className="-translate-x-1/2 absolute font-['Montserrat:SemiBold',sans-serif] font-semibold h-[55.238px] leading-[67.5px] left-[179.21px] text-[#bd8e84] text-[24px] text-center top-[707.19px] tracking-[0.72px] w-[251.886px]">Settings</p>
+      <p className="-translate-x-1/2 absolute font-['Montserrat:SemiBold',sans-serif] font-semibold h-[55.238px] leading-[67.5px] left-[179.21px] text-[#bd8e84] text-[24px] text-center top-[707.19px] tracking-[0.72px] w-[251.886px]">Export Report</p>
     </div>
   );
 }
