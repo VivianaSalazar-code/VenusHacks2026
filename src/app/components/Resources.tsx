@@ -1,10 +1,55 @@
-import { useState } from "react";
-import { Search, MapPin, Phone, Clock, AlertCircle, Heart, Users, GraduationCap } from "lucide-react";
+// src/app/components/Resources.tsx
+import { useState, useEffect } from "react";
+import { Search, MapPin, Phone, Clock, AlertCircle, Heart, Users, GraduationCap, ExternalLink, BookOpen, Video, FileText, Activity, Droplet, Apple } from "lucide-react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+
+// Types matching backend schemas
+type LifeStage = "teen" | "adult" | "expecting" | "postpartum" | "menopause";
+type DashBucket = "vegetables" | "fruits" | "whole_grains" | "lean_protein" | "low_fat_dairy" | "nuts_seeds_legumes" | "fats_sweets";
+
+interface UserProfile {
+  user_name: string;
+  age: number;
+  ethnicity: string;
+  user_location: string;
+}
+
+interface LifeStageState {
+  life_stage: LifeStage;
+  weeks_postpartum: number;
+  maternity_desert_zone: boolean;
+}
+
+interface Biometrics {
+  sys_bp: number;
+  dia_bp: number;
+  current_hr: number;
+  current_hrv: number;
+  active_symptoms: string[];
+}
+
+interface DailyNutrition {
+  daily_sodium_mg: number;
+  daily_cholesterol_mg: number;
+  daily_potassium_mg: number;
+  daily_calories: number;
+  daily_protein_g: number;
+  daily_carbs_g: number;
+  daily_fat_g: number;
+  daily_fiber_g: number;
+  target_diet_type: string;
+}
+
+interface FullState {
+  user_profile: UserProfile;
+  life_stage_state: LifeStageState;
+  biometrics: Biometrics;
+  daily_nutrition: DailyNutrition;
+}
 
 interface Clinic {
   name: string;
@@ -13,6 +58,8 @@ interface Clinic {
   distance: string;
   services: string[];
   language: string[];
+  website?: string;
+  google_maps_url?: string;
 }
 
 interface SupportGroup {
@@ -21,150 +68,267 @@ interface SupportGroup {
   schedule: string;
   location: string;
   contact: string;
+  website?: string;
+  distance?: number;
 }
 
+interface BPScreeningLocation {
+  name: string;
+  address: string;
+  hours: string;
+  cost: string;
+  website?: string;
+}
+
+interface ResourceLink {
+  title: string;
+  description: string;
+  url: string;
+  category: "article" | "video" | "guide" | "external";
+  language?: string;
+}
+
+interface PersonalizedResourcesResponse {
+  clinics: Clinic[];
+  support_groups: SupportGroup[];
+  bp_screening: BPScreeningLocation[];
+  resource_links: ResourceLink[];
+  health_alert: {
+    title: string;
+    message: string;
+    severity: string;
+    action_required: boolean;
+  } | null;
+  personalized_recommendations: string[];
+}
+
+// API service
+const apiService = {
+  async getPersonalizedResources(state: FullState): Promise<PersonalizedResourcesResponse> {
+    const response = await fetch('/api/resources/personalized', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(state),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resources');
+    }
+
+    return response.json();
+  },
+
+  async getUserState(): Promise<FullState | null> {
+    const savedState = localStorage.getItem('userFullState');
+    if (savedState) {
+      return JSON.parse(savedState);
+    }
+    return null;
+  },
+
+  async saveUserState(state: FullState): Promise<void> {
+    localStorage.setItem('userFullState', JSON.stringify(state));
+  }
+};
+
+// Main Resources Component
 export function Resources() {
-  const [location, setLocation] = useState("");
+  const [userState, setUserState] = useState<FullState | null>(null);
+  const [resources, setResources] = useState<PersonalizedResourcesResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showHealthAlert, setShowHealthAlert] = useState(true);
+  const [activeTab, setActiveTab] = useState("clinics");
 
-  const clinics: Clinic[] = [
-    {
-      name: "Community Health Center of Orange County",
-      address: "1835 Newport Blvd, Costa Mesa, CA 92627",
-      phone: "(714) 972-3000",
-      distance: "2.3 miles",
-      services: ["Prenatal Care", "Postpartum Care", "Blood Pressure Screening", "Cardiovascular Health"],
-      language: ["English", "Spanish", "Vietnamese"],
-    },
-    {
-      name: "St. Joseph Hospital Women's Health Center",
-      address: "1100 W Stewart Dr, Orange, CA 92868",
-      phone: "(714) 734-6220",
-      distance: "4.1 miles",
-      services: ["Maternity Services", "Heart Health Screening", "Postpartum Support"],
-      language: ["English", "Spanish"],
-    },
-    {
-      name: "Planned Parenthood - Orange",
-      address: "1310 N Main St, Santa Ana, CA 92701",
-      phone: "(800) 576-5544",
-      distance: "5.8 miles",
-      services: ["Women's Health", "Blood Pressure Screening", "Health Education"],
-      language: ["English", "Spanish", "Tagalog"],
-    },
-  ];
+  // Load user state and fetch personalized resources
+  useEffect(() => {
+    const loadResources = async () => {
+      try {
+        // Get user state from localStorage (set during onboarding)
+        let state = await apiService.getUserState();
 
-  const supportGroups: SupportGroup[] = [
-    {
-      name: "Postpartum Support International - OC Chapter",
-      type: "Postpartum Depression & Anxiety Support",
-      schedule: "Every Tuesday, 6:00 PM - 7:30 PM",
-      location: "Virtual & In-Person (Irvine)",
-      contact: "(800) 944-4773",
-    },
-    {
-      name: "Mamas Latinas - Grupo de Apoyo",
-      type: "Spanish-Speaking Maternal Support",
-      schedule: "Every Thursday, 5:00 PM - 6:30 PM",
-      location: "Santa Ana Community Center",
-      contact: "(714) 647-5400",
-    },
-    {
-      name: "Heart Health for New Mothers",
-      type: "Cardiovascular Health Education",
-      schedule: "2nd and 4th Wednesday, 10:00 AM - 11:30 AM",
-      location: "Hoag Hospital, Newport Beach",
-      contact: "(949) 764-4624",
-    },
-  ];
+        // If no state exists, create a demo state (for testing)
+        if (!state) {
+          state = {
+            user_profile: {
+              user_name: "Maria",
+              age: 32,
+              ethnicity: "hispanic",
+              user_location: "Costa Mesa, CA 92627",
+            },
+            life_stage_state: {
+              life_stage: "postpartum",
+              weeks_postpartum: 3,
+              maternity_desert_zone: false,
+            },
+            biometrics: {
+              sys_bp: 128,
+              dia_bp: 85,
+              current_hr: 78,
+              current_hrv: 42,
+              active_symptoms: ["fatigue", "shortness_breath"],
+            },
+            daily_nutrition: {
+              daily_sodium_mg: 2300,
+              daily_cholesterol_mg: 180,
+              daily_potassium_mg: 2500,
+              daily_calories: 1850,
+              daily_protein_g: 65,
+              daily_carbs_g: 200,
+              daily_fat_g: 55,
+              daily_fiber_g: 25,
+              target_diet_type: "DASH",
+            },
+          };
+          await apiService.saveUserState(state);
+        }
 
-  const bpScreeningLocations = [
-    {
-      name: "CVS MinuteClinic - Free BP Screening",
-      address: "Multiple locations in Orange County",
-      hours: "Walk-in hours: Mon-Fri 9am-7pm, Sat-Sun 10am-5pm",
-      cost: "Free",
-    },
-    {
-      name: "American Heart Association - Community Screenings",
-      address: "Check website for monthly locations",
-      hours: "Monthly community events",
-      cost: "Free",
-    },
-    {
-      name: "Orange County Health Care Agency",
-      address: "405 W 5th St, Santa Ana, CA 92701",
-      hours: "Mon-Fri 8am-5pm",
-      cost: "Free or sliding scale",
-    },
-  ];
+        setUserState(state);
+
+        // Fetch personalized resources based on user state
+        const personalizedResources = await apiService.getPersonalizedResources(state);
+        setResources(personalizedResources);
+      } catch (error) {
+        console.error("Error loading resources:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadResources();
+  }, []);
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "article":
+        return <FileText size={18} />;
+      case "video":
+        return <Video size={18} />;
+      case "guide":
+        return <BookOpen size={18} />;
+      default:
+        return <ExternalLink size={18} />;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "article":
+        return "bg-blue-100 text-blue-700";
+      case "video":
+        return "bg-purple-100 text-purple-700";
+      case "guide":
+        return "bg-green-100 text-green-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const openExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f79891] mx-auto mb-4"></div>
+          <p className="font-['Poppins'] text-[#9e876e]">Personalizing your resources...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!resources || !userState) {
+    return (
+      <div className="p-6">
+        <Alert>
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle>Unable to load resources</AlertTitle>
+          <AlertDescription>Please check your connection and try again.</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
-      {/* Health Alert - Demo Feature */}
-      {showHealthAlert && (
-        <Alert className="mb-6 border-2 border-red-500 bg-red-50">
-          <AlertCircle className="h-5 w-5 text-red-600" />
-          <AlertTitle className="text-red-900 font-['Montserrat'] font-bold text-lg">
-            Important Health Alert
+      {/* Health Alert from Backend */}
+      {showHealthAlert && resources.health_alert && (
+        <Alert className={`mb-6 border-2 ${resources.health_alert.severity === 'critical'
+            ? 'border-red-500 bg-red-50'
+            : 'border-yellow-500 bg-yellow-50'
+          }`}>
+          <AlertCircle className={`h-5 w-5 ${resources.health_alert.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
+            }`} />
+          <AlertTitle className="font-['Montserrat'] font-bold text-lg">
+            {resources.health_alert.title}
           </AlertTitle>
-          <AlertDescription className="text-red-800 font-['Poppins'] text-sm mt-2">
-            <p className="mb-2">
-              We've noticed concerning patterns in your recent symptoms: shortness of breath (3 days), chest discomfort (2 days), and unusual fatigue.
-            </p>
-            <p className="mb-3 font-semibold">
-              These symptoms may indicate a serious heart condition, even if you're not experiencing a "typical" heart attack.
-              Many women, especially during pregnancy and postpartum, experience different heart attack symptoms than men.
-            </p>
-            <div className="flex gap-3">
-              <Button className="bg-red-600 hover:bg-red-700 font-['Montserrat'] font-semibold">
-                Find Nearest Emergency Care
-              </Button>
-              <Button variant="outline" className="border-red-600 text-red-600 font-['Montserrat'] font-semibold">
-                Call 911
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setShowHealthAlert(false)}
-                className="text-red-600"
-              >
-                Dismiss
-              </Button>
-            </div>
+          <AlertDescription className="mt-2">
+            <p className="mb-3">{resources.health_alert.message}</p>
+            {resources.health_alert.action_required && (
+              <div className="flex gap-3">
+                <Button
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => openExternalLink("https://www.google.com/maps/search/emergency+room+near+me")}
+                >
+                  Find Emergency Care
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-red-600 text-red-600"
+                  onClick={() => window.location.href = "tel:911"}
+                >
+                  Call 911
+                </Button>
+                <Button variant="ghost" onClick={() => setShowHealthAlert(false)}>
+                  Dismiss
+                </Button>
+              </div>
+            )}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Header */}
+      {/* Personalized Header */}
       <div className="mb-6">
         <h1 className="font-['Montserrat'] font-bold text-3xl text-[#172e54] mb-2">
-          Resources & Support
+          Resources for {userState.user_profile.user_name}
         </h1>
-        <p className="font-['Montserrat'] font-semibold text-base text-[#9e876e]">
-          Find healthcare services, support groups, and educational resources near you
+        <p className="font-['Poppins'] text-base text-[#9e876e]">
+          Personalized based on your {userState.life_stage_state.life_stage} stage and health profile
         </p>
       </div>
 
-      {/* Location Search */}
+      {/* Personalized Recommendations */}
+      {resources.personalized_recommendations.length > 0 && (
+        <Card className="bg-gradient-to-r from-[#caebfe] to-[#f3efe7] p-5 rounded-2xl mb-6">
+          <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-3">
+            💡 Personalized Recommendations
+          </h3>
+          <ul className="space-y-2">
+            {resources.personalized_recommendations.map((rec, idx) => (
+              <li key={idx} className="font-['Poppins'] text-sm text-[#172e54] flex items-start gap-2">
+                <span className="text-[#f79891]">•</span>
+                {rec}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {/* Location Info */}
       <Card className="bg-white p-5 rounded-3xl border-2 border-[#f3efe7] mb-6">
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#bd8e84]" size={20} />
-            <Input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter your ZIP code or city (e.g., Irvine, CA)"
-              className="pl-10 rounded-2xl border-2 border-[#f3efe7] font-['Poppins'] text-sm"
-            />
-          </div>
-          <Button className="rounded-2xl bg-[#f79891] hover:bg-[#f79891]/90 font-['Montserrat'] font-semibold text-sm">
-            <Search size={18} className="mr-2" />
-            Search
-          </Button>
+        <div className="flex items-center gap-2 text-[#172e54]">
+          <MapPin size={20} className="text-[#f79891]" />
+          <span className="font-['Poppins'] text-sm">
+            Showing resources near: <strong>{userState.user_profile.user_location}</strong>
+          </span>
         </div>
       </Card>
 
-      <Tabs defaultValue="clinics" className="mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="bg-[#f3efe7] rounded-3xl p-1.5">
           <TabsTrigger value="clinics" className="rounded-2xl data-[state=active]:bg-white text-sm">
             Nearby Clinics
@@ -175,20 +339,18 @@ export function Resources() {
           <TabsTrigger value="screening" className="rounded-2xl data-[state=active]:bg-white text-sm">
             BP Screening
           </TabsTrigger>
-          <TabsTrigger value="advocate" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            Self-Advocacy
-          </TabsTrigger>
-          <TabsTrigger value="education" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            Education
+          <TabsTrigger value="resources" className="rounded-2xl data-[state=active]:bg-white text-sm">
+            Resources & Links
           </TabsTrigger>
         </TabsList>
 
         {/* Nearby Clinics */}
         <TabsContent value="clinics" className="mt-4 space-y-3">
           <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Clinics Near You - Specialized in Maternal & Heart Health
+            Clinics Near You
           </h2>
-          {clinics.map((clinic, idx) => (
+
+          {resources.clinics.map((clinic, idx) => (
             <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7] hover:border-[#bd8e84] transition-all">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -209,50 +371,31 @@ export function Resources() {
                     <p className="font-['Poppins'] text-xs text-[#9e876e] mb-1">Services:</p>
                     <div className="flex flex-wrap gap-1.5">
                       {clinic.services.map((service, i) => (
-                        <span
-                          key={i}
-                          className="px-2.5 py-1 bg-[#caebfe] rounded-full font-['Poppins'] text-xs text-[#172e54]"
-                        >
+                        <span key={i} className="px-2.5 py-1 bg-[#caebfe] rounded-full font-['Poppins'] text-xs text-[#172e54]">
                           {service}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <p className="font-['Poppins'] text-xs text-[#9e876e] mb-1">Languages Spoken:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {clinic.language.map((lang, i) => (
-                        <span
-                          key={i}
-                          className="px-2.5 py-1 bg-[#f3efe7] rounded-full font-['Poppins'] text-xs text-[#172e54]"
-                        >
-                          {lang}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-                <Button className="rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm">
+                <Button
+                  className="rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm"
+                  onClick={() => openExternalLink(clinic.google_maps_url || `https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`)}
+                >
                   Get Directions
                 </Button>
               </div>
             </Card>
           ))}
-
-          <div className="mt-4 p-4 bg-[#f3efe7] rounded-2xl">
-            <p className="font-['Poppins'] text-sm text-[#172e54]">
-              <strong>Note:</strong> These clinics offer services specifically tailored to Hispanic communities
-              and postpartum care. Many accept Medi-Cal and offer sliding scale fees.
-            </p>
-          </div>
         </TabsContent>
 
         {/* Support Groups */}
         <TabsContent value="support" className="mt-4 space-y-3">
           <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Postpartum & Heart Health Support Groups
+            Support Groups
           </h2>
-          {supportGroups.map((group, idx) => (
+
+          {resources.support_groups.map((group, idx) => (
             <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-[#f3efe7] rounded-full">
@@ -271,6 +414,9 @@ export function Resources() {
                     <p className="font-['Poppins'] text-sm text-[#172e54] flex items-center gap-2">
                       <MapPin size={16} />
                       {group.location}
+                      {group.distance && (
+                        <span className="text-[#9e876e] text-xs">({group.distance.toFixed(1)} miles)</span>
+                      )}
                     </p>
                     <p className="font-['Poppins'] text-sm text-[#172e54] flex items-center gap-2">
                       <Phone size={16} />
@@ -278,31 +424,25 @@ export function Resources() {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" className="rounded-2xl border-2 border-[#172e54] text-sm">
-                  Join Group
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-2 border-[#172e54] text-sm"
+                  onClick={() => openExternalLink(group.website || "#")}
+                >
+                  Learn More
                 </Button>
               </div>
             </Card>
           ))}
-
-          <div className="mt-4 p-4 bg-[#caebfe] rounded-2xl">
-            <h4 className="font-['Montserrat'] font-semibold text-base text-[#172e54] mb-2">
-              National Resources
-            </h4>
-            <ul className="space-y-2 font-['Poppins'] text-sm text-[#172e54]">
-              <li>• <strong>Postpartum Support International:</strong> 1-800-944-4773 (English & Spanish)</li>
-              <li>• <strong>National Maternal Mental Health Hotline:</strong> 1-833-943-5746 (24/7)</li>
-              <li>• <strong>American Heart Association Women's Health:</strong> (877) 242-4277</li>
-            </ul>
-          </div>
         </TabsContent>
 
-        {/* BP Screening Locations */}
+        {/* BP Screening */}
         <TabsContent value="screening" className="mt-4 space-y-3">
           <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
             Free & Affordable Blood Pressure Screening
           </h2>
-          {bpScreeningLocations.map((location, idx) => (
+
+          {resources.bp_screening.map((location, idx) => (
             <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -323,220 +463,59 @@ export function Resources() {
                     </p>
                   </div>
                 </div>
-                <Button className="rounded-2xl bg-[#f79891] hover:bg-[#f79891]/90 text-sm">
+                <Button
+                  className="rounded-2xl bg-[#f79891] hover:bg-[#f79891]/90 text-sm"
+                  onClick={() => openExternalLink(location.website || "https://www.heart.org")}
+                >
                   Learn More
                 </Button>
               </div>
             </Card>
           ))}
-
-          <div className="mt-4 p-4 bg-[#f3efe7] rounded-2xl">
-            <h4 className="font-['Montserrat'] font-semibold text-base text-[#172e54] mb-2">
-              Why Regular BP Screening Matters
-            </h4>
-            <p className="font-['Poppins'] text-sm text-[#172e54] mb-3">
-              High blood pressure is a leading cause of heart disease and stroke. For pregnant and postpartum women,
-              regular monitoring is crucial to prevent preeclampsia and postpartum complications.
-            </p>
-            <p className="font-['Poppins'] text-sm text-[#172e54]">
-              <strong>Recommended:</strong> Check your blood pressure at least once every 2 weeks during the first
-              6 months postpartum, especially if you experienced high blood pressure during pregnancy.
-            </p>
-          </div>
         </TabsContent>
 
-        {/* Self-Advocacy */}
-        <TabsContent value="advocate" className="mt-4 space-y-3">
+        {/* Resources & Links */}
+        <TabsContent value="resources" className="mt-4 space-y-3">
           <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            How to Advocate for Yourself
+            Trusted Resources & Educational Links
           </h2>
 
-          <Card className="bg-gradient-to-r from-[#f79891]/20 to-[#caebfe]/20 p-5 rounded-2xl border-2 border-[#f79891]">
-            <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-3">
-              Your Rights as a Patient
-            </h3>
-            <ul className="space-y-2 font-['Poppins'] text-sm text-[#172e54]">
-              <li>✓ You have the right to be heard and taken seriously</li>
-              <li>✓ You can request a second opinion</li>
-              <li>✓ You can bring a support person to appointments</li>
-              <li>✓ You deserve clear explanations in your preferred language</li>
-              <li>✓ You can request additional tests if you feel something is wrong</li>
-            </ul>
-          </Card>
-
-          <Card className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
-            <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-3">
-              What to Say When Your Concerns Are Dismissed
-            </h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-[#f3efe7] rounded-xl">
-                <p className="font-['Poppins'] text-sm text-[#172e54] font-semibold mb-1">
-                  "I understand your assessment, but I know my body, and something feels wrong."
-                </p>
-              </div>
-              <div className="p-3 bg-[#caebfe] rounded-xl">
-                <p className="font-['Poppins'] text-sm text-[#172e54] font-semibold mb-1">
-                  "Please document in my chart that I requested [test/referral] and it was declined."
-                </p>
-              </div>
-              <div className="p-3 bg-[#f3efe7] rounded-xl">
-                <p className="font-['Poppins'] text-sm text-[#172e54] font-semibold mb-1">
-                  "These symptoms are unusual for me. I'd like to rule out serious conditions."
-                </p>
-              </div>
-              <div className="p-3 bg-[#caebfe] rounded-xl">
-                <p className="font-['Poppins'] text-sm text-[#172e54] font-semibold mb-1">
-                  "I'd like a referral to a specialist who has experience with [your specific concern]."
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
-            <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-3">
-              Warning Signs NOT to Ignore
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-red-50 border-2 border-red-200 rounded-xl">
-                <h4 className="font-['Montserrat'] font-semibold text-sm text-red-900 mb-2">Heart Attack Symptoms in Women:</h4>
-                <ul className="space-y-1 font-['Poppins'] text-xs text-red-800">
-                  <li>• Unusual fatigue</li>
-                  <li>• Shortness of breath</li>
-                  <li>• Nausea or indigestion</li>
-                  <li>• Back, shoulder, or jaw pain</li>
-                  <li>• Chest discomfort (not always severe)</li>
-                </ul>
-              </div>
-              <div className="p-3 bg-orange-50 border-2 border-orange-200 rounded-xl">
-                <h4 className="font-['Montserrat'] font-semibold text-sm text-orange-900 mb-2">Postpartum Emergencies:</h4>
-                <ul className="space-y-1 font-['Poppins'] text-xs text-orange-800">
-                  <li>• Severe headaches</li>
-                  <li>• Vision changes</li>
-                  <li>• High blood pressure (140/90+)</li>
-                  <li>• Chest pain or rapid heartbeat</li>
-                  <li>• Severe abdominal pain</li>
-                </ul>
-              </div>
-            </div>
-            <p className="mt-3 font-['Poppins'] text-sm text-[#172e54] font-semibold text-center">
-              If you experience any of these symptoms, seek immediate medical care. Don't wait to see if they go away.
-            </p>
-          </Card>
-        </TabsContent>
-
-        {/* Education */}
-        <TabsContent value="education" className="mt-4 space-y-3">
-          <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Heart Health Education by Life Stage
-          </h2>
-
-          <Card className="bg-[#caebfe] p-5 rounded-2xl border-0">
-            <div className="flex items-start gap-4">
-              <GraduationCap className="text-[#172e54] flex-shrink-0" size={32} />
-              <div>
-                <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-2">
-                  Teens & Young Adults (13-25)
-                </h3>
-                <p className="font-['Poppins'] text-sm text-[#172e54] mb-3">
-                  Building healthy habits early is key to lifelong heart health. Focus on nutrition, exercise, and understanding your body.
-                </p>
-                <ul className="space-y-1 font-['Poppins'] text-sm text-[#172e54]">
-                  <li>• Understanding your baseline heart health</li>
-                  <li>• Birth control and cardiovascular risks</li>
-                  <li>• Healthy eating patterns for heart health</li>
-                  <li>• Exercise recommendations for teens</li>
-                  <li>• Recognizing early warning signs</li>
-                </ul>
-                <Button className="mt-3 rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm">
-                  Access Teen Resources
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-[#f3efe7] p-5 rounded-2xl border-0">
-            <div className="flex items-start gap-4">
-              <Heart className="text-[#f79891] flex-shrink-0" size={32} />
-              <div>
-                <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-2">
-                  Expecting & New Mothers
-                </h3>
-                <p className="font-['Poppins'] text-sm text-[#172e54] mb-3">
-                  Pregnancy and postpartum periods are critical times for heart health. Learn about risks and how to protect yourself.
-                </p>
-                <ul className="space-y-1 font-['Poppins'] text-sm text-[#172e54]">
-                  <li>• Preeclampsia and gestational hypertension</li>
-                  <li>• Postpartum cardiomyopathy warning signs</li>
-                  <li>• Managing high blood pressure after delivery</li>
-                  <li>• Nutrition for heart health while breastfeeding</li>
-                  <li>• When to seek emergency care postpartum</li>
-                  <li>• Long-term cardiovascular risks after pregnancy complications</li>
-                </ul>
-                <Button className="mt-3 rounded-2xl bg-[#f79891] hover:bg-[#f79891]/90 text-sm">
-                  Maternal Health Guide
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
-            <div className="flex items-start gap-4">
-              <Users className="text-[#bd8e84] flex-shrink-0" size={32} />
-              <div>
-                <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-2">
-                  Adults (26-50)
-                </h3>
-                <p className="font-['Poppins'] text-sm text-[#172e54] mb-3">
-                  Prevention and early detection are crucial. Know your numbers and risk factors.
-                </p>
-                <ul className="space-y-1 font-['Poppins'] text-sm text-[#172e54]">
-                  <li>• Understanding cholesterol and blood pressure</li>
-                  <li>• Lifestyle modifications for heart health</li>
-                  <li>• Stress management and heart disease</li>
-                  <li>• Women's unique cardiovascular risk factors</li>
-                  <li>• Recommended screening schedule</li>
-                </ul>
-                <Button className="mt-3 rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm">
-                  Prevention Resources
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-[#f3efe7] p-5 rounded-2xl border-0">
-            <div className="flex items-start gap-4">
-              <Heart className="text-[#172e54] flex-shrink-0" size={32} />
-              <div>
-                <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-2">
-                  Menopause & Beyond (50+)
-                </h3>
-                <p className="font-['Poppins'] text-sm text-[#172e54] mb-3">
-                  Heart disease risk increases after menopause. Stay informed and proactive about your heart health.
-                </p>
-                <ul className="space-y-1 font-['Poppins'] text-sm text-[#172e54]">
-                  <li>• How menopause affects heart health</li>
-                  <li>• Hormone replacement therapy considerations</li>
-                  <li>• Managing cholesterol during menopause</li>
-                  <li>• Exercise and nutrition for aging hearts</li>
-                  <li>• Recognizing heart attack symptoms in older women</li>
-                </ul>
-                <Button className="mt-3 rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm">
-                  Menopause Heart Health
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <div className="mt-4 p-4 bg-gradient-to-r from-[#f79891]/20 to-[#caebfe]/20 rounded-2xl border-2 border-[#bd8e84]">
-            <h4 className="font-['Montserrat'] font-semibold text-base text-[#172e54] mb-2">
-              Additional Resources
-            </h4>
-            <ul className="space-y-2 font-['Poppins'] text-sm text-[#172e54]">
-              <li>• <strong>CDC Heart Disease Resources:</strong> cdc.gov/heartdisease</li>
-              <li>• <strong>NIH Women's Health:</strong> nih.gov/womenshealth</li>
-              <li>• <strong>American Heart Association Go Red for Women:</strong> goredforwomen.org</li>
-              <li>• <strong>Office on Women's Health (HHS):</strong> womenshealth.gov</li>
-            </ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {resources.resource_links.map((resource, idx) => (
+              <Card
+                key={idx}
+                className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7] hover:border-[#bd8e84] hover:shadow-lg transition-all group cursor-pointer"
+                onClick={() => openExternalLink(resource.url)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`p-1.5 rounded-lg ${getCategoryColor(resource.category)}`}>
+                        {getCategoryIcon(resource.category)}
+                      </span>
+                      <span className="font-['Poppins'] text-xs font-semibold uppercase tracking-wide text-[#9e876e]">
+                        {resource.category}
+                      </span>
+                      {resource.language && (
+                        <span className="px-2 py-0.5 bg-[#f3efe7] rounded-full font-['Poppins'] text-xs text-[#172e54]">
+                          {resource.language}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-['Montserrat'] font-semibold text-base text-[#172e54] mb-1">
+                      {resource.title}
+                    </h3>
+                    <p className="font-['Poppins'] text-sm text-[#9e876e] mb-3">
+                      {resource.description}
+                    </p>
+                    <div className="inline-flex items-center gap-2 font-['Poppins'] text-sm text-[#f79891] group-hover:gap-3 transition-all">
+                      View Resource
+                      <ExternalLink size={14} />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </TabsContent>
       </Tabs>
