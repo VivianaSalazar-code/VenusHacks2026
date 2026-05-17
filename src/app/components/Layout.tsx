@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Heart, LayoutDashboard, Utensils, BookOpen, FileDown } from "lucide-react";
+import { Heart, LayoutDashboard, Utensils, BookOpen, FileDown, Baby} from "lucide-react";
 import imgImage8 from "../../imports/Heart/edbe587244b11aa5490269df39a1dec1a2e383ec.png";
 
 export function Layout() {
@@ -21,52 +21,69 @@ export function Layout() {
 				</div>
 
 				{/* Navigation */}
-				<nav className="flex-1 px-3 space-y-1">
-					<NavLink
-						to="/"
-						end
-						className={({ isActive }) =>
-							`flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
-								isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
-							}`
-						}
-					>
-						<LayoutDashboard size={18} />
-						Dashboard
-					</NavLink>
+<nav className="flex-1 px-3 space-y-1">
+    {/* 1. Dashboard Link */}
+    <NavLink
+        to="/"
+        end
+        className={({ isActive }) =>
+            `flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
+                isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
+            }`
+        }
+    >
+        <LayoutDashboard size={18} />
+        Dashboard
+    </NavLink>
 
-					<NavLink
-						to="/meal-tracker"
-						className={({ isActive }) =>
-							`flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
-								isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
-							}`
-						}
-					>
-						<Utensils size={18} />
-						Meal Tracker
-					</NavLink>
+    {/* 2. Prenatal Hub Link */}
+    <NavLink
+        to="/prenatal"
+        className={({ isActive }) =>
+            `flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
+                isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
+            }`
+        }
+    >
+        <Baby size={18} />
+        Prenatal Hub
+    </NavLink>
 
-					<NavLink
-						to="/resources"
-						className={({ isActive }) =>
-							`flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
-								isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
-							}`
-						}
-					>
-						<BookOpen size={18} />
-						Resources
-					</NavLink>
+    {/* 3. Meal Tracker Link */}
+    <NavLink
+        to="/meal-tracker"
+        className={({ isActive }) =>
+            `flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
+                isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
+            }`
+        }
+    >
+        <Utensils size={18} />
+        Meal Tracker
+    </NavLink>
 
-					<NavLink
-						to="/export"
-						className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] text-[#bd8e84] hover:bg-[#f3efe7]/50 transition-colors w-full text-left"
-					>
-						<FileDown size={18} />
-						Export Report
-					</NavLink>
-				</nav>
+    {/* 4. Resources Link */}
+    <NavLink
+        to="/resources"
+        className={({ isActive }) =>
+            `flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] transition-colors ${
+                isActive ? "text-[#172e54] bg-[#f3efe7]" : "text-[#bd8e84] hover:bg-[#f3efe7]/50"
+            }`
+        }
+    >
+        <BookOpen size={18} />
+        Resources
+    </NavLink>
+
+    {/* 5. Export Report Link */}
+    <NavLink
+        to="/export"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-['Montserrat'] font-semibold text-[16px] tracking-[0.48px] text-[#bd8e84] hover:bg-[#f3efe7]/50 transition-colors w-full text-left"
+    >
+        <FileDown size={18} />
+        Export Report
+    </NavLink>
+</nav>
 			</div>
 
 			{/* Main Content */}
