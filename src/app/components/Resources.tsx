@@ -13,7 +13,7 @@ const content = {
     leftSubtitle: "Find healthcare services and support groups near you",
     searchPlaceholder: "Search clinics, support groups, or BP screenings...",
     locationPlaceholder: "Enter zip code or city",
-    locationBtn: "Find Nearby Clinics",
+    locationBtn: "Find",
     searchBtn: "Search",
     clearBtn: "Clear",
     tabs: ["Nearby Clinics", "Support Groups", "BP Screening"],

@@ -1,35 +1,19 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Card } from "./ui/card";
-import { Calendar, Footprints, Activity, Droplets, Baby, ArrowDown } from "lucide-react";
+import { Calendar, Footprints, Activity, Droplets, Baby } from "lucide-react";
 
 export function PrenatalHub() {
     // Premium Interactive states for the user to log items directly on the UI
     const [kicks, setKicks] = useState(6);
     const [waterIntake, setWaterIntake] = useState(1.8);
 
-    // Reference for the section to scroll to
-    const premaSectionRef = useRef<HTMLDivElement>(null);
-
-    // Scroll function
-    const scrollToPreMA = () => {
-        premaSectionRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    };
-
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto animate-fadeIn">
-
             {/* ─── Page Header ─── */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="font-['Montserrat'] font-bold text-[28px] text-[#172e54] mb-1">
-                        Prenatal Health Hub
-                    </h1>
-                    <p className="font-['Montserrat'] font-semibold text-[14px] text-[#9e876e] tracking-[0.42px]">
-                        24 Weeks | Second Trimester
-                    </p>
+                    <h1 className="font-['Montserrat'] font-bold text-[28px] text-[#172e54] mb-1">Prenatal Health Hub</h1>
+                    <p className="font-['Montserrat'] font-semibold text-[14px] text-[#9e876e] tracking-[0.42px]">24 Weeks | Second Trimester</p>
                 </div>
                 <div className="flex gap-3">
                     <button className="px-4 py-2 rounded-[40px] bg-gradient-to-r from-[#f79891] to-[#f79891] shadow-md font-['Montserrat'] font-bold text-[13px] text-[#172e54]">
@@ -38,26 +22,15 @@ export function PrenatalHub() {
                     <button className="px-4 py-2 rounded-[40px] bg-white border-2 border-[#f79891] font-['Montserrat'] font-bold text-[13px] text-[#172e54]">
                         Español
                     </button>
-                    {/* Scroll Button */}
-                    <button
-                        onClick={scrollToPreMA}
-                        className="px-4 py-2 rounded-[40px] bg-[#172e54] text-white hover:bg-[#1e3d6e] transition-all font-['Montserrat'] font-bold text-[13px] flex items-center gap-2 shadow-sm"
-                    >
-                        <ArrowDown size={16} />
-                        Assessment
-                    </button>
                 </div>
             </div>
 
             {/* ─── Premium Prenatal Trackers Grid ─── */}
             <div>
-                <h2 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54] mb-3">
-                    Pregnancy Vitals & Trackers
-                </h2>
+                <h2 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54] mb-3">Pregnancy Vitals & Trackers</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
                     {/* Gestational Clock */}
-                    <Card className="bg-[#f3efe7] p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#bd8e84] font-medium">Gestational Age</p>
                             <Calendar className="text-[#bd8e84]" size={20} />
@@ -67,7 +40,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Active Fetal Kick Counter */}
-                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-white p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#172e54] font-medium">Fetal Movements</p>
                             <Footprints className="text-[#172e54]" size={20} />
@@ -87,7 +60,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Symphysis-Fundal Height Tracking */}
-                    <Card className="bg-white p-5 rounded-[30px] border-2 border-[#f3efe7] shadow-none">
+                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-2 border-[#f3efe7] shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#bd8e84] font-medium">Fundal Height</p>
                             <Activity className="text-[#f79891]" size={20} />
@@ -99,7 +72,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Pregnancy Hydration Tracking Module */}
-                    <Card className="bg-[#caebfe]/40 p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-white p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#172e54] font-medium">Maternal Hydration</p>
                             <Droplets className="text-blue-500" size={20} />
@@ -117,25 +90,20 @@ export function PrenatalHub() {
                         </div>
                         <p className="font-['Poppins'] text-[11px] text-[#172e54]/60 mt-1">Daily Target: 3.0 Liters</p>
                     </Card>
-
                 </div>
             </div>
 
             {/* ─── California Surgeon General PreMA Framework ─── */}
-            <Card
-                ref={premaSectionRef}
-                className="bg-white p-6 rounded-[30px] border-2 border-[#f3efe7] overflow-hidden shadow-sm scroll-mt-4"
-            >
+            <Card className="bg-white p-6 rounded-[30px] border-2 border-[#f3efe7] overflow-hidden shadow-sm">
                 <div className="mb-4 flex items-start gap-3">
                     <div className="p-2 bg-[#f3efe7] rounded-full text-[#172e54]">
                         <Baby size={22} />
                     </div>
                     <div>
-                        <h3 className="font-['Montserrat'] font-bold text-[18px] text-[#172e54] mb-0.5">
-                            Preconception Health Assessment
-                        </h3>
+                        <h3 className="font-['Montserrat'] font-bold text-[18px] text-[#172e54] mb-0.5">Preconception Health Assessment</h3>
                         <p className="font-['Poppins'] text-[12px] text-[#9e876e]">
-                            Bilingual questionnaire engine engineered by the Office of the California Surgeon General. Please respond thoroughly to update your clinical risk indexes.
+                            Bilingual questionnaire engine engineered by the Office of the California Surgeon General. Please respond thoroughly to update your
+                            clinical risk indexes.
                         </p>
                     </div>
                 </div>
@@ -144,7 +112,7 @@ export function PrenatalHub() {
                 <div className="w-full h-[650px] rounded-2xl overflow-hidden border border-[#f3efe7] bg-[#fdfbf7] shadow-inner">
                     <iframe
                         src="https://delfinacare.github.io/preconception-medical-assessment/embed.html"
-                        style={{ border: 'none' }}
+                        style={{ border: "none" }}
                         width="100%"
                         height="100%"
                         title="Preconception Medical Assessment Framework"
@@ -152,20 +120,10 @@ export function PrenatalHub() {
                 </div>
 
                 <p className="font-['Poppins'] text-[10px] text-[#9e876e]/60 mt-4 italic text-center leading-relaxed">
-                    Disclaimer: Open-source diagnostics client hosted in collaboration with Delfina Care Inc. Utilizing this structural configuration does not establish an alternative doctor-patient relationship or serve as a medical emergency framework.
+                    Disclaimer: Open-source diagnostics client hosted in collaboration with Delfina Care Inc. Utilizing this structural configuration does not
+                    establish an alternative doctor-patient relationship or serve as a medical emergency framework.
                 </p>
             </Card>
-
-            {/* ─── Back to Top Button (optional) ─── */}
-            <div className="flex justify-center pt-4">
-                <button
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="px-5 py-2 rounded-full bg-[#f3efe7] hover:bg-[#e8e0d4] transition-all font-['Poppins'] text-[12px] text-[#172e54] flex items-center gap-2"
-                >
-                    ↑ Back to Top
-                </button>
-            </div>
-
         </div>
     );
 }

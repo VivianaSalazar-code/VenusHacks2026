@@ -117,5 +117,8 @@ def red_flag_message(language: str) -> str:
         "especially if you're pregnant or postpartum. Don't wait to talk to me first.\n\n"
         "_Not medical advice. Contact your clinician for personalized care._"
     )
+<<<<<<< HEAD
+=======
     
         
+>>>>>>> resources
