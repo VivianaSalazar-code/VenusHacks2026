@@ -529,21 +529,6 @@ export default function LongitudinalHealthReport() {
 						</ul>
 					</div>
 				</div>
-
-				{/* Footer */}
-				<div
-					style={{
-						textAlign: "center",
-						marginTop: 20,
-						marginBottom: 8,
-						fontFamily: "Poppins, sans-serif",
-						fontSize: 11,
-						color: "#bd8e84",
-						letterSpacing: "0.05em",
-					}}
-				>
-					FOR CLINICAL USE ONLY · CONFIDENTIAL
-				</div>
 			</div>
 		</div>
 	);
