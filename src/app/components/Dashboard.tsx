@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Heart, Scan, AlertCircle, ChevronRight, MoreHorizontal, X, Droplets, Moon, Activity, Dumbbell, TrendingUp } from "lucide-react";
-
+// Add import at top of file, with other asset imports:
+import imgBearHead from "../../assets/hera/bear_head.PNG";
+import imgBearHeart from "../../assets/hera/bear_heart.PNG";
 // ─── Trend data ───────────────────────────────────────────────────────────────
 const DATES = ["5/10", "5/11", "5/12", "5/13", "5/14", "5/15"];
 
@@ -662,7 +664,7 @@ export function Dashboard() {
 								margin: 0,
 							}}
 						>
-							Hello, Daisy <span>🐻</span>
+							Hello, Daisy <img src={imgBearHead} alt="bear" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "multiply" }} />
 						</h1>
 						<p style={{ fontFamily: "Montserrat,sans-serif", fontWeight: 600, fontSize: 13, color: "#e8796a", margin: "3px 0 0" }}>
 							24 Weeks | Second Trimester
@@ -882,7 +884,7 @@ export function Dashboard() {
 
 				{/* Bear */}
 				<div style={{ display: "flex", justifyContent: "center", marginTop: 10, userSelect: "none" }}>
-					<span style={{ fontSize: 60 }}>🐻</span>
+					<img src={imgBearHeart} alt="bear with heart" style={{ width: 90, height: 90, objectFit: "contain", mixBlendMode: "multiply" }} />
 				</div>
 			</div>
 		</div>

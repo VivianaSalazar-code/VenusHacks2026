@@ -9,8 +9,8 @@ export function Layout() {
 			<div className="w-[260px] border-r border-[#bd8e84] flex flex-col">
 				{/* Logo */}
 				<div className="flex flex-col items-center pt-4 pb-3">
-					<img src={imgImage8} alt="HeartHealth Logo" className="w-[70px] h-[70px] mb-2" />
-					<h1 className="font-['Montserrat'] font-bold text-[22px] text-[#172e54] tracking-[0.66px]">HeartHealth</h1>
+					<img src={imgImage8} alt="HeraHeart Logo" className="w-[70px] h-[70px] mb-2" />
+					<h1 className="font-['Montserrat'] font-bold text-[22px] text-[#172e54] tracking-[0.66px]">HeraHeart</h1>
 				</div>
 
 				{/* User Profile */}
