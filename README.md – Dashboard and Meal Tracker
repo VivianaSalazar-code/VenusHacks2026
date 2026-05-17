@@ -1,0 +1,30 @@
+
+  # Dashboard and Meal Tracker
+
+  A responsive dashboard for tracking health metrics and nutrition intake -- designed to help users monitor daily intake and spot patterns over time.
+
+  Figma: [View Design](https://www.figma.com/design/U9C7We4dsxgUAyPJlQq3Xv/Dashboard-and-Meal-Tracker).
+
+  ## Features
+  | Feature | Description |
+  |---------|-------------|
+  | Dashboard Overview | Summary of recent health checks |
+  |---------|-------------|
+  | Prenatal Hub | Summary of pregnancy vitals and trackers |
+  |---------|-------------|
+  | Meal Tracker | Holistic nutrition hub to track daily and weekly food intake. |
+  |---------|-------------|
+  | Resources | Dashboard of local resources and patient advocacy tools |
+  |---------|-------------|
+  | Export Report | Download an overall health report to bring to your next health service. |
+  |---------|-------------|
+
+  ## Running the code
+
+  Requirements:
+  - [Node.js]([url](http://nodejs.org/en/download))
+
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  
