@@ -11,7 +11,7 @@ const content = {
     pageTitle: "Resources and Support",
     leftTitle: "Resources & Support",
     leftSubtitle: "Find healthcare services and support groups near you",
-    searchPlaceholder: "Search clinics, support groups, or BP screenings...",
+    searchPlaceholder: "Search by name, services, or language...",
     locationPlaceholder: "Enter zip code or city",
     locationBtn: "Find",
     searchBtn: "Search",
