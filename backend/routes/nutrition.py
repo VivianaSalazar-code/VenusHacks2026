@@ -250,3 +250,4 @@ async def lookup_barcode(barcode: str, name_hint: str | None = None) -> BarcodeL
         confidence=0.0, data_quality=0.0,
         notes="Couldn't identify this barcode. Use Manual Entry with the brand + product name.",
     )
+    
