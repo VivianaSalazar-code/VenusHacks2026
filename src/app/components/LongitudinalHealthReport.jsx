@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 const patientData = {
-  name: "Maria Santos",
+  name: "Daisy Salazar",
   dob: "1994-03-12",
   pregnancy: "24 weeks (Second Trimester)",
   location: "Irvine, CA",
