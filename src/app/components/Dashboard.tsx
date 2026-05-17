@@ -68,12 +68,12 @@ const TRENDS: Record<
 
 // card bg colors by id — used in both MetricCard and AreaChart
 const CARD_COLORS: Record<string, { bg: string; chartColor: string; chartFill: string }> = {
-	bloodSugar: { bg: "#fef0ee", chartColor: "#e8796a", chartFill: "#f7b5ad" },
-	sleep: { bg: "#fff8e8", chartColor: "#d4a017", chartFill: "#f5dfa0" },
-	heartRate: { bg: "#fef0ee", chartColor: "#e8796a", chartFill: "#f7b5ad" },
-	exercise: { bg: "#edf7ed", chartColor: "#3a8a3a", chartFill: "#b5d9b5" },
-	bloodPressure: { bg: "#fff8e8", chartColor: "#d4a017", chartFill: "#f5dfa0" },
-	cholesterol: { bg: "#edf7ed", chartColor: "#3a8a3a", chartFill: "#b5d9b5" },
+	bloodSugar: { bg: "#fff8e8", chartColor: "#d4a017", chartFill: "#f5dfa0" }, // yellow
+	sleep: { bg: "#fef0ee", chartColor: "#e8796a", chartFill: "#f7b5ad" }, // red
+	heartRate: { bg: "#edf7ed", chartColor: "#3a8a3a", chartFill: "#b5d9b5" }, // green
+	exercise: { bg: "#edf7ed", chartColor: "#3a8a3a", chartFill: "#b5d9b5" }, // green
+	bloodPressure: { bg: "#fef0ee", chartColor: "#e8796a", chartFill: "#f7b5ad" }, // red
+	cholesterol: { bg: "#fff8e8", chartColor: "#d4a017", chartFill: "#f5dfa0" }, // yellow
 };
 
 // ─── Area Chart — color follows selected card ─────────────────────────────────
@@ -485,7 +485,7 @@ interface CardProps {
 	source: string;
 	ago: string;
 	trendDir: "stable" | "up" | "down";
-	status: "green" | "orange";
+	status: "green" | "orange" | "red";
 	alert?: string;
 	alertGreen?: boolean;
 	selected: boolean;
@@ -493,7 +493,7 @@ interface CardProps {
 }
 
 function MetricCard({ id, icon, label, value, unit, source, ago, trendDir, status, alert, alertGreen, selected, onClick }: CardProps) {
-	const dot = status === "green" ? "#4caf50" : "#ff9800";
+	const dot = status === "green" ? "#4caf50" : status === "red" ? "#e8796a" : "#ff9800";
 	const arrow = trendDir === "up" ? "↑ Up" : trendDir === "down" ? "↓ Down" : "→ Stable";
 	const cc = CARD_COLORS[id] || { bg: "white" };
 	// text colors adapt to the card bg
@@ -602,9 +602,11 @@ export function Dashboard() {
 			value: "95",
 			unit: "mg/dl",
 			source: "Self Report",
-			ago: "2 hours ago",
+			ago: "1.5 years ago",
 			trendDir: "stable",
-			status: "green",
+			status: "orange",
+			alert: "Last checked 1.5 years ago — update your glucose screening",
+			alertGreen: false,
 			selected: selectedCard === "bloodSugar",
 			onClick: () => setSelectedCard("bloodSugar"),
 		},
@@ -612,13 +614,14 @@ export function Dashboard() {
 			id: "sleep",
 			icon: <Moon size={14} />,
 			label: "Sleep Time",
-			value: "6.5",
+			value: "3",
 			unit: "hours",
 			source: "Luqis Watch",
 			ago: "8 hours ago",
 			trendDir: "down",
-			status: "orange",
-			alert: "Try to get 7-9 hours of sleep",
+			status: "red",
+			alert: "Sleep is significantly below the recommended pregnancy range",
+			alertGreen: false,
 			selected: selectedCard === "sleep",
 			onClick: () => setSelectedCard("sleep"),
 		},
@@ -632,6 +635,7 @@ export function Dashboard() {
 			ago: "5 minutes ago",
 			trendDir: "stable",
 			status: "green",
+			alertGreen: true,
 			selected: selectedCard === "heartRate",
 			onClick: () => setSelectedCard("heartRate"),
 		},
@@ -645,6 +649,7 @@ export function Dashboard() {
 			ago: "3 hours ago",
 			trendDir: "up",
 			status: "green",
+			alertGreen: true,
 			selected: selectedCard === "exercise",
 			onClick: () => setSelectedCard("exercise"),
 		},
@@ -657,12 +662,12 @@ export function Dashboard() {
 			source: "Self Report",
 			ago: "1 day ago",
 			trendDir: "stable",
-			status: "orange",
-			alert: "Schedule a check-up with your healthcare provider",
+			status: "red",
+			alert: "Blood pressure is slightly higher today — monitor closely",
+			alertGreen: false,
 			selected: selectedCard === "bloodPressure",
 			onClick: () => setSelectedCard("bloodPressure"),
 		},
-		// ── ago updated to reflect 1.5 years for blood sugar + cholesterol
 		{
 			id: "cholesterol",
 			icon: <TrendingUp size={14} />,
@@ -672,16 +677,13 @@ export function Dashboard() {
 			source: "Self Report",
 			ago: "1.5 years ago",
 			trendDir: "stable",
-			status: "green",
-			alert: "Last checked 1.5 years ago — update your levels",
+			status: "orange",
+			alert: "Last checked 1.5 years ago — update your cholesterol screening",
 			alertGreen: false,
 			selected: selectedCard === "cholesterol",
 			onClick: () => setSelectedCard("cholesterol"),
 		},
 	];
-
-	// patch blood sugar ago too
-	cards[0] = { ...cards[0], ago: "1.5 years ago", alert: "Last checked 1.5 years ago — schedule a new test" };
 
 	const isMother = true;
 	const age = userState.user_profile?.age || 34;
