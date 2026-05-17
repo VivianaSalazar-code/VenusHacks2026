@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Heart, Activity, TrendingUp, Apple, Camera, X, Droplets, Moon, Dumbbell, Zap, RefreshCw } from "lucide-react";
+import { Heart, Activity, TrendingUp, Apple, Camera, X, Droplets, Moon, Dumbbell, Zap, RefreshCw, ClipboardCheck } from "lucide-react";
 import { Card } from "./ui/card";
+import { PrenatalHub } from "./PrenatalHub";
 import imgUntitled from "../../imports/Heart/f8e5ef285b2d64c2c20ac445853acd3b679749e8.png";
 
 // ─── rPPG Signal Processor ────────────────────────────────────────────────────
@@ -492,6 +493,8 @@ export function Dashboard() {
 				</button>
 			</div>
 
+			
+
 			<div className="grid grid-cols-2 gap-3 mb-6">
 				{/* Heart Rate */}
 				<MetricCard
@@ -594,6 +597,37 @@ export function Dashboard() {
 					</div>
 				</Card>
 			</div>
+
+			{/* ─── ADDED: Preconception Medical Assessment Module ─── */}
+<div className="mb-6">
+    <div className="mb-3 flex items-center gap-2">
+        <ClipboardCheck className="text-[#172e54]" size={18} />
+        <h2 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54]">Preconception Health Screening</h2>
+    </div>
+    <Card className="bg-white p-5 rounded-[30px] border-2 border-[#f3efe7] overflow-hidden">
+        <div className="mb-3">
+            <h3 className="font-['Montserrat'] font-semibold text-[14px] text-[#172e54]">PreMA Interactive Assessment</h3>
+            <p className="font-['Poppins'] text-[11px] text-[#9e876e]">
+                Bilingual questionnaire developed by the Office of the California Surgeon General. Complete the steps below to compute color-coded clinical risk indices.
+            </p>
+        </div>
+        
+        {/* Embedded Form View */}
+        <div className="w-full h-[550px] rounded-2xl overflow-hidden border border-[#f3efe7]">
+            <iframe 
+                src="https://delfinacare.github.io/preconception-medical-assessment/embed.html" 
+                style={{ border: 'none' }} 
+                width="100%" 
+                height="100%"
+                title="Preconception Medical Assessment Quiz"
+            />
+        </div>
+        
+        <p className="font-['Poppins'] text-[9px] text-[#9e876e]/60 mt-3 italic leading-tight text-center">
+            Disclaimer: Open-source utility powered by Delfina Care Inc. Using this code layout does not substitute for professional medical consultations or build an active patient-physician framework.
+        </p>
+    </Card>
+</div>
 
 			{/* Quick Actions */}
 			<div className="grid grid-cols-3 gap-4">
