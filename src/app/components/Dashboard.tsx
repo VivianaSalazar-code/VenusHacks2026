@@ -258,7 +258,7 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 				proc.current.reset();
 				let frames = 0;
 				// ── 300 frames ≈ 10 seconds at 30 fps — longer scan for demo ──
-				const TOTAL = 300;
+				const TOTAL = 600;
 				const gh: number[] = [];
 				const tick = () => {
 					if (!alive) return;
@@ -671,33 +671,20 @@ export function Dashboard() {
 								margin: 0,
 							}}
 						>
-							Hello, Daisy
+							Hello, Josephine
 							<img src={imgBearHead} alt="bear" style={{ width: 34, height: 34, objectFit: "contain", mixBlendMode: "multiply" }} />
 						</h1>
 						<p style={{ fontFamily: "Montserrat,sans-serif", fontWeight: 600, fontSize: 13, color: "#e8796a", margin: "3px 0 0" }}>
 							24 Weeks | Second Trimester
 						</p>
 					</div>
-					<div style={{ display: "flex", borderRadius: 40, overflow: "hidden", border: "1.5px solid rgba(232,121,106,0.35)", background: "white" }}>
-						{(["en", "es"] as const).map((l) => (
-							<button
-								key={l}
-								onClick={() => setLang(l)}
-								style={{
-									padding: "6px 18px",
-									fontFamily: "Montserrat,sans-serif",
-									fontWeight: 700,
-									fontSize: 12,
-									border: "none",
-									cursor: "pointer",
-									transition: "all 0.15s",
-									background: lang === l ? (l === "en" ? "#f5f0e8" : "#e8796a") : "transparent",
-									color: lang === l ? (l === "en" ? "#1a2f4e" : "white") : "#9e876e",
-								}}
-							>
-								{l === "en" ? "English" : "Español"}
-							</button>
-						))}
+					<div className="flex gap-3">
+						<button className="px-4 py-2 rounded-[40px] bg-gradient-to-r from-[#f79891] to-[#f79891] shadow-md font-['Montserrat'] font-bold text-[13px] text-[#172e54]">
+							English
+						</button>
+						<button className="px-4 py-2 rounded-[40px] bg-white border-2 border-[#f79891] font-['Montserrat'] font-bold text-[13px] text-[#172e54]">
+							Español
+						</button>
 					</div>
 				</div>
 

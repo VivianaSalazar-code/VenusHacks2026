@@ -30,11 +30,11 @@ export function Layout() {
 				<div className="flex flex-col items-center py-4 px-3">
 					<img
 						src={imgProfile}
-						alt="Daisy Salazar"
+						alt="Josephine B"
 						className="w-[90px] h-[90px] rounded-full object-cover mb-2"
 						style={{ border: "2.5px solid rgba(232,121,106,0.35)", boxShadow: "0 2px 10px rgba(0,0,0,0.12)" }}
 					/>
-					<p className="font-['Poppins'] font-medium text-[14px] text-[#172e54]">Daisy Salazar</p>
+					<p className="font-['Poppins'] font-medium text-[14px] text-[#172e54]">Josephine B</p>
 					<p className="font-['Poppins'] font-medium text-[12px] text-[#e8796a]">Irvine, CA</p>
 				</div>
 
