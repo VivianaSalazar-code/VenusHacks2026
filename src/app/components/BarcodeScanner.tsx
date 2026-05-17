@@ -1,15 +1,3 @@
-// Webcam barcode scanner powered by html5-qrcode. Renders inside a modal
-// (Radix Dialog) and resolves with a successful scan -> backend lookup chain:
-//
-//   1. html5-qrcode reads the EAN/UPC.
-//   2. We call /api/nutrition/barcode/{code}; if Open Food Facts has it we get
-//      real nutrients back. Otherwise the backend invokes the LLM fallback,
-//      which estimates a nutrient profile from a `name_hint` we collect.
-//   3. We hand the parent a confirmed result; the parent calls logMeal().
-//
-// We also expose a Manual Entry tab so the demo never falls dead if the camera
-// or barcode lookup fails.
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, Loader2, Plus, X } from "lucide-react";
 
@@ -55,8 +43,11 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
   const [needsHint, setNeedsHint] = useState<string | null>(null);
   const [hintInput, setHintInput] = useState("");
 
-  // html5-qrcode instance lives outside React render lifecycle
   const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null);
+  // Single-shot guard: html5-qrcode fires success on every frame (~10 fps).
+  // Without this, every frame triggers a backend lookup -> infinite loop.
+  const consumedRef = useRef(false);
+  const inFlightCodeRef = useRef<string | null>(null);
 
   const teardown = useCallback(async () => {
     if (scannerRef.current) {
@@ -73,21 +64,29 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
 
   const handleLookup = useCallback(
     async (barcode: string, nameHint?: string) => {
+      if (inFlightCodeRef.current === barcode) return;
+      inFlightCodeRef.current = barcode;
       setLookupBusy(true);
       setScanError(null);
       try {
         const result = await api.lookupBarcode(barcode, nameHint);
         if (!result.found || result.source === "not_found") {
-          // Ask for a name hint and retry through the LLM path.
+          // Fall into the name-entry flow (same path used when scan fails).
           setNeedsHint(barcode);
         } else {
           setPending(result);
           setNeedsHint(null);
         }
       } catch (e) {
-        setScanError((e as Error).message);
+        // Network / timeout / 500 — don't dead-end. Drop into name entry so
+        // the user can recover with the same flow as Manual Entry.
+        setScanError(
+          `Couldn't look up barcode (${(e as Error).message}). Type the product name below to try again.`,
+        );
+        setNeedsHint(barcode);
       } finally {
         setLookupBusy(false);
+        inFlightCodeRef.current = null;
       }
     },
     [],
@@ -95,8 +94,8 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
 
   const startScanner = useCallback(async () => {
     setScanError(null);
+    consumedRef.current = false;
     try {
-      // Dynamic import so the bundle doesn't pay for it on initial load.
       const mod = await import("html5-qrcode");
       const Html5Qrcode = mod.Html5Qrcode;
       const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
@@ -104,12 +103,16 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
       await scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 240, height: 140 } },
-        async (decodedText: string) => {
-          await teardown();
-          await handleLookup(decodedText);
+        (decodedText: string) => {
+          if (consumedRef.current) return;
+          consumedRef.current = true;
+          void (async () => {
+            await teardown();
+            await handleLookup(decodedText);
+          })();
         },
         () => {
-          /* swallow per-frame decode failures */
+          /* per-frame decode failures */
         },
       );
       setScannerActive(true);
@@ -120,7 +123,6 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
     }
   }, [handleLookup, teardown]);
 
-  // Auto-start scanner when modal opens in scan mode
   useEffect(() => {
     if (!open) {
       void teardown();
@@ -157,21 +159,32 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
   }, [pending, onLog, onClose]);
 
   const submitHint = useCallback(async () => {
-    if (!needsHint || !hintInput.trim()) return;
-    await handleLookup(needsHint, hintInput.trim());
-    setHintInput("");
-  }, [needsHint, hintInput, handleLookup]);
-
+    if (!hintInput.trim()) return;
+    setLookupBusy(true);
+    setScanError(null);
+    try {
+      // Use the same path as Manual Entry — USDA-by-name → LLM. Skips
+      // re-running the full barcode cascade, which is slow and pointless
+      // once we know OFF/USDA-by-barcode don't have this item.
+      const result = await api.lookupByName(hintInput.trim());
+      setPending(result);
+      setNeedsHint(null);
+      setHintInput("");
+    } catch (e) {
+      setScanError((e as Error).message);
+    } finally {
+      setLookupBusy(false);
+    }
+  }, [hintInput]);
   const submitManual = useCallback(async () => {
     const name = manualName.trim();
     if (!name) return;
     setLookupBusy(true);
+    setScanError(null);
     try {
-      // If a barcode is supplied, route through the lookup endpoint (real
-      // nutrients beat LLM-estimated ones). Otherwise ask the LLM directly.
       const result = manualBarcode.trim()
         ? await api.lookupBarcode(manualBarcode.trim(), name)
-        : await api.lookupBarcode("0000000000000", name); // sentinel -> OFF miss -> LLM
+        : await api.lookupByName(name);
       setPending({ ...result, name: result.name || name });
     } catch (e) {
       setScanError((e as Error).message);
@@ -215,7 +228,6 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
           </button>
         </div>
 
-        {/* Scanner viewport */}
         {mode === "scan" && !pending && !needsHint && (
           <div className="space-y-3">
             <div
@@ -237,7 +249,6 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
           </div>
         )}
 
-        {/* Manual entry */}
         {mode === "manual" && !pending && (
           <div className="space-y-3">
             <div>
@@ -272,7 +283,6 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
           </div>
         )}
 
-        {/* LLM hint flow when OFF misses */}
         {needsHint && !pending && (
           <div className="space-y-3 mt-3 p-3 rounded-[16px] bg-[#fff7ec] border border-[#f4d8a0]">
             <p className="font-['Poppins'] text-[12px] text-[#172e54]">
@@ -295,7 +305,6 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
           </div>
         )}
 
-        {/* Lookup result -> confirm to log */}
         {pending && (
           <div className="space-y-3 mt-2">
             <div className="rounded-[16px] bg-[#f3efe7] p-4">
@@ -303,20 +312,19 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
                 <h3 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54]">
                   {pending.name}
                 </h3>
-                <span
-                  className={`text-[10px] font-['Poppins'] px-2 py-0.5 rounded-full ${
-                    pending.source === "openfoodfacts"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {pending.source === "openfoodfacts" ? "Open Food Facts" : "LLM estimate"}
+                <span className={`text-[10px] font-['Poppins'] px-2 py-0.5 rounded-full ${sourceBadgeClass(pending.source)}`}>
+                  {sourceLabel(pending.source)}
                 </span>
               </div>
               <p className="font-['Poppins'] text-[11px] text-[#9e876e] mb-3">
                 DASH bucket: <strong className="text-[#172e54]">{BUCKET_LABELS[pending.dash_bucket]}</strong>
               </p>
               <NutrientGrid n={pending.nutrients} />
+              {pending.data_quality < 0.6 && (
+                <p className="font-['Poppins'] text-[10px] text-amber-700 mt-2">
+                  ⚠ Incomplete data ({Math.round(pending.data_quality * 100)}% of fields). Double-check the label before logging.
+                </p>
+              )}
               {pending.notes ? (
                 <p className="font-['Poppins'] text-[10px] text-[#bd8e84] mt-2 italic">
                   {pending.notes}
@@ -351,6 +359,30 @@ export function BarcodeScanner({ open, onClose, onLog }: Props) {
       </Card>
     </div>
   );
+}
+
+function sourceLabel(source: BarcodeLookupResult["source"]): string {
+  switch (source) {
+    case "openfoodfacts": return "Open Food Facts";
+    case "usda_fdc_barcode": return "USDA (barcode)";
+    case "usda_fdc_name": return "USDA (name match)";
+    case "llm_estimate": return "AI estimate";
+    case "not_found": return "Not found";
+  }
+}
+
+function sourceBadgeClass(source: BarcodeLookupResult["source"]): string {
+  switch (source) {
+    case "openfoodfacts":
+    case "usda_fdc_barcode":
+      return "bg-green-100 text-green-700";
+    case "usda_fdc_name":
+      return "bg-blue-100 text-blue-700";
+    case "llm_estimate":
+      return "bg-yellow-100 text-yellow-800";
+    case "not_found":
+      return "bg-red-100 text-red-700";
+  }
 }
 
 function NutrientGrid({ n }: { n: MealNutrients }) {

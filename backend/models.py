@@ -127,12 +127,19 @@ class NutritionTodayResponse(BaseModel):
 
 class BarcodeLookupResponse(BaseModel):
     found: bool
-    source: Literal["openfoodfacts", "llm_estimate", "not_found"]
+    source: Literal[
+        "openfoodfacts",
+        "usda_fdc_barcode",
+        "usda_fdc_name",
+        "llm_estimate",
+        "not_found",
+    ]
     name: str
     dash_bucket: DashBucket
     nutrients: MealNutrients
     barcode: str
     confidence: float = 1.0
+    data_quality: float = 1.0
     notes: Optional[str] = None
 
 
