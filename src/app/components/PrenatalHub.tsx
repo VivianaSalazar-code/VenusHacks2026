@@ -9,16 +9,11 @@ export function PrenatalHub() {
 
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto animate-fadeIn">
-
             {/* ─── Page Header ─── */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="font-['Montserrat'] font-bold text-[28px] text-[#172e54] mb-1">
-                        Prenatal Health Hub
-                    </h1>
-                    <p className="font-['Montserrat'] font-semibold text-[14px] text-[#9e876e] tracking-[0.42px]">
-                        24 Weeks | Second Trimester
-                    </p>
+                    <h1 className="font-['Montserrat'] font-bold text-[28px] text-[#172e54] mb-1">Prenatal Health Hub</h1>
+                    <p className="font-['Montserrat'] font-semibold text-[14px] text-[#9e876e] tracking-[0.42px]">24 Weeks | Second Trimester</p>
                 </div>
                 <div className="flex gap-3">
                     <button className="px-4 py-2 rounded-[40px] bg-gradient-to-r from-[#f79891] to-[#f79891] shadow-md font-['Montserrat'] font-bold text-[13px] text-[#172e54]">
@@ -32,13 +27,10 @@ export function PrenatalHub() {
 
             {/* ─── Premium Prenatal Trackers Grid ─── */}
             <div>
-                <h2 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54] mb-3">
-                    Pregnancy Vitals & Trackers
-                </h2>
+                <h2 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54] mb-3">Pregnancy Vitals & Trackers</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
                     {/* Gestational Clock */}
-                    <Card className="bg-[#f3efe7] p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#bd8e84] font-medium">Gestational Age</p>
                             <Calendar className="text-[#bd8e84]" size={20} />
@@ -48,7 +40,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Active Fetal Kick Counter */}
-                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-white p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#172e54] font-medium">Fetal Movements</p>
                             <Footprints className="text-[#172e54]" size={20} />
@@ -68,7 +60,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Symphysis-Fundal Height Tracking */}
-                    <Card className="bg-white p-5 rounded-[30px] border-2 border-[#f3efe7] shadow-none">
+                    <Card className="bg-[#caebfe] p-5 rounded-[30px] border-2 border-[#f3efe7] shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#bd8e84] font-medium">Fundal Height</p>
                             <Activity className="text-[#f79891]" size={20} />
@@ -80,7 +72,7 @@ export function PrenatalHub() {
                     </Card>
 
                     {/* Pregnancy Hydration Tracking Module */}
-                    <Card className="bg-[#caebfe]/40 p-5 rounded-[30px] border-0 shadow-none">
+                    <Card className="bg-white p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
                             <p className="font-['Poppins'] text-[12px] text-[#172e54] font-medium">Maternal Hydration</p>
                             <Droplets className="text-blue-500" size={20} />
@@ -98,7 +90,6 @@ export function PrenatalHub() {
                         </div>
                         <p className="font-['Poppins'] text-[11px] text-[#172e54]/60 mt-1">Daily Target: 3.0 Liters</p>
                     </Card>
-
                 </div>
             </div>
 
@@ -109,11 +100,10 @@ export function PrenatalHub() {
                         <Baby size={22} />
                     </div>
                     <div>
-                        <h3 className="font-['Montserrat'] font-bold text-[18px] text-[#172e54] mb-0.5">
-                            Preconception Health Assessment
-                        </h3>
+                        <h3 className="font-['Montserrat'] font-bold text-[18px] text-[#172e54] mb-0.5">Preconception Health Assessment</h3>
                         <p className="font-['Poppins'] text-[12px] text-[#9e876e]">
-                            Bilingual questionnaire engine engineered by the Office of the California Surgeon General. Please respond thoroughly to update your clinical risk indexes.
+                            Bilingual questionnaire engine engineered by the Office of the California Surgeon General. Please respond thoroughly to update your
+                            clinical risk indexes.
                         </p>
                     </div>
                 </div>
@@ -122,7 +112,7 @@ export function PrenatalHub() {
                 <div className="w-full h-[650px] rounded-2xl overflow-hidden border border-[#f3efe7] bg-[#fdfbf7] shadow-inner">
                     <iframe
                         src="https://delfinacare.github.io/preconception-medical-assessment/embed.html"
-                        style={{ border: 'none' }}
+                        style={{ border: "none" }}
                         width="100%"
                         height="100%"
                         title="Preconception Medical Assessment Framework"
@@ -130,10 +120,10 @@ export function PrenatalHub() {
                 </div>
 
                 <p className="font-['Poppins'] text-[10px] text-[#9e876e]/60 mt-4 italic text-center leading-relaxed">
-                    Disclaimer: Open-source diagnostics client hosted in collaboration with Delfina Care Inc. Utilizing this structural configuration does not establish an alternative doctor-patient relationship or serve as a medical emergency framework.
+                    Disclaimer: Open-source diagnostics client hosted in collaboration with Delfina Care Inc. Utilizing this structural configuration does not
+                    establish an alternative doctor-patient relationship or serve as a medical emergency framework.
                 </p>
             </Card>
-
         </div>
     );
 }
