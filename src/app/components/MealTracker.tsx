@@ -5,10 +5,6 @@
 //   - "Scan Barcode" opens a webcam scanner that calls /api/nutrition/barcode/{code}
 //   - "Add Meal" opens the same component in Manual Entry mode
 //   - The chat panel sends to /api/chat with the full user state attached
-//
-// The outdated food-pyramid pie charts have been replaced by the DASH
-// Cardio-Plate (a 7-bucket donut). The "Cardio-Plate" tab gives it a full
-// breakdown view; the "Today" tab keeps it as a compact widget.
 
 import { useState } from "react";
 import { AlertTriangle, Loader2, Plus, QrCode, RotateCcw, Send, Sparkles } from "lucide-react";
@@ -59,7 +55,7 @@ export function MealTracker() {
 	};
 
 	return (
-		<div className="p-6">
+		<div className="p-6 w-full">
 			<div className="mb-6">
 				<h1 className="font-['Montserrat'] font-bold text-[28px] text-[#172e54] mb-1">Holistic Nutrition Hub</h1>
 				<p className="font-['Montserrat'] font-semibold text-[14px] text-[#9e876e] tracking-[0.42px]">
@@ -135,7 +131,8 @@ export function MealTracker() {
 				</div>
 			)}
 
-			<div className="grid grid-cols-2 gap-4 items-stretch">
+			<div className="grid grid-cols-2 gap-4 items-start">
+				{/* LEFT COLUMN — meals list + live DASH plate widget */}
 				<div className="space-y-4">
 					<div>
 						<div className="flex items-center justify-between mb-3">
@@ -218,7 +215,9 @@ export function MealTracker() {
 					</Card>
 				</div>
 
+				{/* RIGHT COLUMN — DASH tips + Sprout chat */}
 				<div className="flex flex-col gap-4">
+					{/* --- DASH QUICK TIPS CARD --- */}
 					<Card className="bg-[#f3efe7] p-4 rounded-[20px] border-0">
 						<div className="flex items-center gap-2 mb-3">
 							<Sparkles className="text-[#f79891]" size={18} />
@@ -233,9 +232,14 @@ export function MealTracker() {
 						</div>
 					</Card>
 
-					<Card className="bg-white p-4 rounded-[20px] border-2 border-[#f3efe7] flex flex-col flex-1 min-h-0">
-						<div className="flex items-center justify-between mb-3">
-							<h3 className="font-['Montserrat'] font-bold text-[16px] text-[#172e54]">Ask Your Advisor</h3>
+					{/* --- SPROUT WELLNESS ASSISTANT CARD --- */}
+					<Card className="bg-white p-4 rounded-[20px] border-2 border-[#f3efe7] flex flex-col flex-1">
+						<div className="flex items-center justify-between mb-3 pb-3 border-b-2 border-[#f3efe7]">
+							<h3 className="font-['Montserrat'] flex items-center gap-2 text-[#172e54]">
+								<span className="font-bold text-[16px]">Ask</span>
+								<span className="bg-[#bd8e84]/10 text-[#bd8e84] px-2.5 py-0.5 rounded-full text-[14px] font-bold">Sprout 🌱</span>
+								<span className="text-[13px] font-medium text-[#bd8e84]/70 hidden sm:inline">your wellness assistant</span>
+							</h3>
 							<button
 								onClick={() => void resetChat()}
 								className="text-[#bd8e84] hover:text-[#172e54] transition-colors"
@@ -244,25 +248,36 @@ export function MealTracker() {
 								<RotateCcw size={14} />
 							</button>
 						</div>
-						<div className="flex-1 min-h-0 overflow-y-auto mb-3 space-y-2 pr-1">
+
+						<div className="h-[350px] overflow-y-auto mb-3 space-y-3 pr-2">
+							{chat.length === 0 && (
+								<div className="text-center mt-10">
+									<p className="font-['Poppins'] text-[12px] text-[#9e876e]">
+										Hi! I'm Sprout. Ask me for heart-healthy recipes or nutrition advice!
+									</p>
+								</div>
+							)}
 							{chat.map((msg, idx) => (
 								<div
 									key={idx}
-									className={`p-2.5 rounded-[12px] ${
-										msg.role === "assistant" ? "bg-[#f3efe7] text-[#172e54]" : "bg-[#caebfe] text-[#172e54] ml-6"
+									className={`p-3 rounded-[15px] w-[85%] ${
+										msg.role === "assistant"
+											? "bg-[#f3efe7] text-[#172e54] mr-auto rounded-tl-sm"
+											: "bg-[#caebfe] text-[#172e54] ml-auto rounded-tr-sm"
 									}`}
 								>
-									<p className="font-['Poppins'] text-[11px] whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+									<p className="font-['Poppins'] text-[12px] whitespace-pre-wrap leading-relaxed">{msg.text}</p>
 								</div>
 							))}
 							{chatBusy && (
-								<div className="p-2.5 rounded-[12px] bg-[#f3efe7] flex items-center gap-2">
+								<div className="p-3 rounded-[15px] bg-[#f3efe7] w-[85%] mr-auto rounded-tl-sm flex items-center gap-2">
 									<Loader2 size={12} className="animate-spin text-[#bd8e84]" />
-									<p className="font-['Poppins'] text-[11px] text-[#bd8e84]">Thinking…</p>
+									<p className="font-['Poppins'] text-[12px] text-[#bd8e84]">Sprout is typing…</p>
 								</div>
 							)}
 						</div>
-						<div className="flex gap-2">
+
+						<div className="flex gap-2 mt-auto pt-2">
 							<Input
 								value={chatInput}
 								onChange={(e) => setChatInput(e.target.value)}
@@ -272,14 +287,14 @@ export function MealTracker() {
 										void handleSendMessage();
 									}
 								}}
-								placeholder="e.g. What should I eat with high blood pressure?"
-								className="rounded-[15px] border-2 border-[#f3efe7] font-['Poppins'] text-sm"
+								placeholder="What should I eat to lower BP?"
+								className="rounded-[15px] border-2 border-[#f3efe7] font-['Poppins'] text-sm focus-visible:ring-[#bd8e84]"
 								disabled={chatBusy}
 							/>
 							<Button
 								onClick={() => void handleSendMessage()}
 								disabled={!chatInput.trim() || chatBusy}
-								className="rounded-[15px] bg-[#172e54] hover:bg-[#172e54]/90 px-3"
+								className="rounded-[15px] bg-[#172e54] hover:bg-[#172e54]/90 px-4"
 							>
 								<Send size={16} />
 							</Button>

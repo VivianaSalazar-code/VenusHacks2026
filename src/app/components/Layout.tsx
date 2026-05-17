@@ -107,7 +107,7 @@ export function Layout() {
 			</div>
 
 			{/* Main Content */}
-			<div style={{ flex: 1, overflow: "hidden", display: "flex", minWidth: 0 }}>
+			<div style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
 				<Outlet />
 			</div>
 		</div>
