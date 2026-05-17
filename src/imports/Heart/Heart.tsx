@@ -236,7 +236,7 @@ function Logo() {
 
 function JohnPork() {
 	return (
-		<div className="absolute contents left-[89.55px] top-[273.77px]" data-name="Daisy">
+		<div className="absolute contents left-[89.55px] top-[273.77px]" data-name="Josephine">
 			<div className="absolute flex h-[125.206px] items-center justify-center left-[91.49px] top-[273.77px] w-[131.837px]">
 				<div className="-scale-y-100 flex-none rotate-180">
 					<div className="h-[125.206px] relative rounded-[100px] w-[131.837px]">
@@ -248,7 +248,7 @@ function JohnPork() {
 				</div>
 			</div>
 			<p className="-translate-x-1/2 absolute font-['Poppins:Medium',sans-serif] h-[25.778px] leading-[32px] left-[162.26px] not-italic text-[#172e54] text-[20px] text-center top-[412.79px] w-[145.409px]">
-				Daisy
+				Josephine
 			</p>
 			<p className="-translate-x-1/2 absolute font-['Poppins:Medium',sans-serif] h-[25.778px] leading-[32px] left-[162.26px] not-italic text-[#bd8e84] text-[16px] text-center top-[438.56px] w-[145.409px]">
 				Irvine, CA

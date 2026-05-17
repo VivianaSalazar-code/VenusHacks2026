@@ -21,7 +21,7 @@ DashBucket = Literal[
 ]
 
 class UserProfile(BaseModel):
-    user_name: str = "Daisy"
+    user_name: str = "Josephine"
     age: int = 32
     ethnicity: str = "unspecified"
     user_location: str = "Irvine, CA"
