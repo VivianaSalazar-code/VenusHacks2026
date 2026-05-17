@@ -9,7 +9,7 @@ export function PrenatalHub() {
 
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto animate-fadeIn">
-            
+
             {/* ─── Page Header ─── */}
             <div className="flex items-center justify-between mb-4">
                 <div>
@@ -36,7 +36,7 @@ export function PrenatalHub() {
                     Pregnancy Vitals & Trackers
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    
+
                     {/* Gestational Clock */}
                     <Card className="bg-[#f3efe7] p-5 rounded-[30px] border-0 shadow-none">
                         <div className="flex justify-between items-start mb-2">
@@ -57,8 +57,8 @@ export function PrenatalHub() {
                             <p className="font-['Montserrat'] font-bold text-[26px] text-[#172e54]">
                                 {kicks} <span className="text-[12px] font-semibold text-[#172e54]/70">kicks</span>
                             </p>
-                            <button 
-                                onClick={() => setKicks(kicks + 1)} 
+                            <button
+                                onClick={() => setKicks(kicks + 1)}
                                 className="bg-[#172e54] text-white text-[11px] font-['Montserrat'] font-bold px-3 py-1 rounded-full hover:bg-[#1e3d6e] transition-colors shadow-sm"
                             >
                                 + Log Kick
@@ -89,8 +89,8 @@ export function PrenatalHub() {
                             <p className="font-['Montserrat'] font-bold text-[26px] text-[#172e54]">
                                 {waterIntake.toFixed(1)} <span className="text-[12px] font-semibold text-[#172e54]/70">L</span>
                             </p>
-                            <button 
-                                onClick={() => setWaterIntake(Math.min(waterIntake + 0.25, 5))} 
+                            <button
+                                onClick={() => setWaterIntake(Math.min(waterIntake + 0.25, 5))}
                                 className="bg-blue-500 text-white text-[11px] font-['Montserrat'] font-bold px-3 py-1 rounded-full hover:bg-blue-600 transition-colors shadow-sm"
                             >
                                 + 250ml
@@ -117,18 +117,18 @@ export function PrenatalHub() {
                         </p>
                     </div>
                 </div>
-                
+
                 {/* Micro-frontend Embedded Survey Shell */}
                 <div className="w-full h-[650px] rounded-2xl overflow-hidden border border-[#f3efe7] bg-[#fdfbf7] shadow-inner">
-                    <iframe 
-                        src="https://delfinacare.github.io/preconception-medical-assessment/embed.html" 
-                        style={{ border: 'none' }} 
-                        width="100%" 
+                    <iframe
+                        src="https://delfinacare.github.io/preconception-medical-assessment/embed.html"
+                        style={{ border: 'none' }}
+                        width="100%"
                         height="100%"
                         title="Preconception Medical Assessment Framework"
                     />
                 </div>
-                
+
                 <p className="font-['Poppins'] text-[10px] text-[#9e876e]/60 mt-4 italic text-center leading-relaxed">
                     Disclaimer: Open-source diagnostics client hosted in collaboration with Delfina Care Inc. Utilizing this structural configuration does not establish an alternative doctor-patient relationship or serve as a medical emergency framework.
                 </p>
