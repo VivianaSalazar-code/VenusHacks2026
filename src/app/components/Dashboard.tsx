@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Heart, Scan, AlertCircle, ChevronRight, MoreHorizontal, X, Droplets, Moon, Activity, Dumbbell, TrendingUp } from "lucide-react";
-// Add import at top of file, with other asset imports:
 import imgBearHead from "../../assets/hera/bear_head.PNG";
 import imgBearHeart from "../../assets/hera/bear_heart.PNG";
+
 // ─── Trend data ───────────────────────────────────────────────────────────────
 const DATES = ["5/10", "5/11", "5/12", "5/13", "5/14", "5/15"];
 
@@ -78,17 +78,12 @@ function AreaChart({ trendKey }: { trendKey: string }) {
 	const cw = W - pL - pR,
 		ch = H - pT - pB,
 		range = t.yMax - t.yMin || 1;
-
-	const pts = t.data.map((v, i) => ({
-		x: pL + (i / (t.data.length - 1)) * cw,
-		y: pT + ch - ((v - t.yMin) / range) * ch,
-	}));
+	const pts = t.data.map((v, i) => ({ x: pL + (i / (t.data.length - 1)) * cw, y: pT + ch - ((v - t.yMin) / range) * ch }));
 	const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 	const areaD = `${lineD} L${pts[pts.length - 1].x.toFixed(1)},${(pT + ch).toFixed(1)} L${pts[0].x.toFixed(1)},${(pT + ch).toFixed(1)} Z`;
 	const curr = t.data[t.data.length - 1],
 		prev = t.data[t.data.length - 2];
 	const statusLabel = Math.abs(curr - prev) < 2 ? "Stable" : curr < prev ? "Down" : "Up";
-
 	return (
 		<div>
 			<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
@@ -234,15 +229,18 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 	const proc = useRef(new RPPGProcessor());
 	const animRef = useRef<number>();
 	const streamRef = useRef<MediaStream>();
+	const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
 	const [status, setStatus] = useState<"init" | "scanning" | "done" | "error">("init");
 	const [progress, setProgress] = useState(0);
 	const [liveHR, setLiveHR] = useState<number | null>(null);
 	const [faceOk, setFaceOk] = useState(false);
 	const [sig, setSig] = useState<number[]>([]);
+
 	const stop = useCallback(() => {
 		if (animRef.current) cancelAnimationFrame(animRef.current);
 		streamRef.current?.getTracks().forEach((t) => t.stop());
 	}, []);
+
 	useEffect(() => {
 		let alive = true;
 		(async () => {
@@ -259,7 +257,8 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 				const ctx = canvasRef.current!.getContext("2d")!;
 				proc.current.reset();
 				let frames = 0;
-				const TOTAL = 180;
+				// ── 300 frames ≈ 10 seconds at 30 fps — longer scan for demo ──
+				const TOTAL = 300;
 				const gh: number[] = [];
 				const tick = () => {
 					if (!alive) return;
@@ -289,11 +288,11 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 					if (hr) setLiveHR(hr);
 					if (frames >= TOTAL) {
 						const fHR = proc.current.getHR();
-						if (fHR) {
-							onResult(fHR, proc.current.getBP(fHR));
-							setStatus("done");
-						}
+						if (fHR) onResult(fHR, proc.current.getBP(fHR));
 						stop();
+						setStatus("done");
+						// Always auto-close after 1.5 s — handles case where HR wasn't detected
+						closeTimerRef.current = setTimeout(() => onClose(), 1500);
 						return;
 					}
 					animRef.current = requestAnimationFrame(tick);
@@ -306,8 +305,9 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 		return () => {
 			alive = false;
 			stop();
+			if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
 		};
-	}, [stop, onResult]);
+	}, [stop, onResult, onClose]);
 
 	return (
 		<div
@@ -342,6 +342,7 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 					<button
 						onClick={() => {
 							stop();
+							if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
 							onClose();
 						}}
 						style={{
@@ -417,7 +418,7 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 				<div style={{ padding: "8px 20px 16px" }}>
 					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
 						<span style={{ fontFamily: "Poppins,sans-serif", fontSize: 10, color: "rgba(255,255,255,0.4)" }}>
-							{status === "done" ? "Complete" : `${progress}%`}
+							{status === "done" ? "Complete ✓" : `${progress}%`}
 						</span>
 						{liveHR && (
 							<span
@@ -450,6 +451,11 @@ function CameraModal({ onResult, onClose }: { onResult: (hr: number, bp: { sys: 
 					{status === "error" && (
 						<p style={{ margin: "8px 0 0", fontFamily: "Poppins,sans-serif", fontSize: 10, color: "#f87171", textAlign: "center" }}>
 							Camera access denied.
+						</p>
+					)}
+					{status === "done" && (
+						<p style={{ margin: "8px 0 0", fontFamily: "Poppins,sans-serif", fontSize: 10, color: "#6dbb7a", textAlign: "center" }}>
+							Scan complete — closing…
 						</p>
 					)}
 					<p style={{ margin: "8px 0 0", fontFamily: "Poppins,sans-serif", fontSize: 9, color: "rgba(255,255,255,0.25)", textAlign: "center" }}>
@@ -644,11 +650,12 @@ export function Dashboard() {
 	];
 
 	return (
-		<div style={{ display: "flex", flex: 1, overflow: "hidden", background: "#f5f0e8" }}>
+		// ── Fill entire parent — no white bar ──────────────────────────────────
+		<div style={{ display: "flex", flex: 1, height: "100%", overflow: "hidden", background: "#f5f0e8" }}>
 			{scanning && <CameraModal onResult={handleScan} onClose={() => setScanning(false)} />}
 
 			{/* ── Main content ── */}
-			<div style={{ flex: 1, overflowY: "auto", padding: "20px 22px", minWidth: 0 }}>
+			<div style={{ flex: 1, overflowY: "auto", padding: "20px 22px", minWidth: 0, background: "#f5f0e8" }}>
 				{/* Header */}
 				<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
 					<div>
@@ -664,7 +671,8 @@ export function Dashboard() {
 								margin: 0,
 							}}
 						>
-							Hello, Daisy <img src={imgBearHead} alt="bear" style={{ width: 32, height: 32, objectFit: "contain", mixBlendMode: "multiply" }} />
+							Hello, Daisy
+							<img src={imgBearHead} alt="bear" style={{ width: 34, height: 34, objectFit: "contain", mixBlendMode: "multiply" }} />
 						</h1>
 						<p style={{ fontFamily: "Montserrat,sans-serif", fontWeight: 600, fontSize: 13, color: "#e8796a", margin: "3px 0 0" }}>
 							24 Weeks | Second Trimester
@@ -726,7 +734,7 @@ export function Dashboard() {
 				</div>
 
 				{/* Bottom row */}
-				<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+				<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, paddingBottom: 20 }}>
 					{/* rPPG */}
 					<button
 						onClick={() => setScanning(true)}
@@ -803,9 +811,19 @@ export function Dashboard() {
 			</div>
 
 			{/* ── Right panel ── */}
-			<div style={{ width: 220, flexShrink: 0, display: "flex", flexDirection: "column", padding: "22px 16px", borderLeft: "1px solid #e2dbd0" }}>
+			<div
+				style={{
+					width: 220,
+					flexShrink: 0,
+					display: "flex",
+					flexDirection: "column",
+					padding: "22px 16px",
+					borderLeft: "1px solid #e2dbd0",
+					background: "#f5f0e8",
+				}}
+			>
 				{/* Watch */}
-				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 16 }}>
 					<div
 						style={{
 							width: 64,
@@ -842,8 +860,17 @@ export function Dashboard() {
 					<p style={{ fontFamily: "Montserrat,sans-serif", fontWeight: 700, fontSize: 13, color: "#1a2f4e", margin: 0 }}>Connected</p>
 				</div>
 
-				{/* Health tips */}
-				<div style={{ background: "white", borderRadius: 18, padding: 14, flex: 1, overflowY: "auto", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
+				{/* Health tips — fixed height, no flex:1 stretching ── */}
+				<div
+					style={{
+						background: "white",
+						borderRadius: 18,
+						padding: 14,
+						overflowY: "auto",
+						boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+						maxHeight: "calc(100vh - 280px)",
+					}}
+				>
 					<p
 						style={{
 							fontFamily: "Montserrat,sans-serif",
@@ -882,8 +909,8 @@ export function Dashboard() {
 					))}
 				</div>
 
-				{/* Bear */}
-				<div style={{ display: "flex", justifyContent: "center", marginTop: 10, userSelect: "none" }}>
+				{/* Bear with heart */}
+				<div style={{ display: "flex", justifyContent: "center", paddingTop: 12, userSelect: "none" }}>
 					<img src={imgBearHeart} alt="bear with heart" style={{ width: 90, height: 90, objectFit: "contain", mixBlendMode: "multiply" }} />
 				</div>
 			</div>
