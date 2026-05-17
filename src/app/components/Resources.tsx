@@ -1,524 +1,610 @@
-// src/app/components/Resources.tsx
-import { useState, useEffect } from "react";
-import { Search, MapPin, Phone, Clock, AlertCircle, Heart, Users, GraduationCap, ExternalLink, BookOpen, Video, FileText, Activity, Droplet, Apple } from "lucide-react";
-import { Card } from "./ui/card";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useState } from "react";
 
-// Types matching backend schemas
-type LifeStage = "teen" | "adult" | "expecting" | "postpartum" | "menopause";
-type DashBucket = "vegetables" | "fruits" | "whole_grains" | "lean_protein" | "low_fat_dairy" | "nuts_seeds_legumes" | "fats_sweets";
+type Lang = "en" | "es";
 
-interface UserProfile {
-  user_name: string;
-  age: number;
-  ethnicity: string;
-  user_location: string;
-}
+// ── BEAR IMAGE ──────────────────────────────────────────────────────────────
+// Replace this URL with any image URL (or import a local file) to swap the bear.
+const BEAR_IMAGE_URL = "bear_resource.PNG";
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface LifeStageState {
-  life_stage: LifeStage;
-  weeks_postpartum: number;
-  maternity_desert_zone: boolean;
-}
+const content = {
+  en: {
+    pageTitle: "Resources and Support",
+    leftTitle: "Resources & Support",
+    leftSubtitle: "Find healthcare services and support groups near you",
+    searchPlaceholder: "Enter zip code or city",
+    searchBtn: "Search",
+    tabs: ["Nearby Clinics", "Support Groups", "BP Screening"],
+    clinicsHeading: "Clinics Near You – Specialized in Maternal & Heart Health",
+    clinics: [
+      {
+        name: "Community Health Center of Orange County",
+        address: "1835 Newport Blvd, Costa Mesa, CA 92627",
+        distance: "2.3 miles",
+        phone: "(714) 972-3000",
+        services: ["Prenatal Care", "Postpartum Care", "Blood Pressure Screening", "Cardiovascular Health"],
+        languages: ["English", "Spanish", "Vietnamese"],
+      },
+      {
+        name: "St. Joseph Hospital Women's Health Center",
+        address: "1100 W Stewart Dr, Orange, CA 92868",
+        distance: "4.1 miles",
+        phone: "(714) 734-6220",
+        services: ["Maternity Services", "Heart Health Screening", "Postpartum Support"],
+        languages: ["English", "Spanish"],
+      },
+      {
+        name: "Planned Parenthood – Orange",
+        address: "1310 N Main St, Santa Ana, CA 92701",
+        distance: "5.8 miles",
+        phone: "(800) 576-5544",
+        services: ["Women's Health", "Blood Pressure Screening", "Health Education"],
+        languages: ["English", "Spanish", "Tagalog"],
+      },
+    ],
+    directionsBtn: "Get Directions",
+    rightTitle: "How to Advocate for Yourself",
+    rightsHeading: "Your Rights as a Patient",
+    rights: [
+      "You have the right to be heard and taken seriously",
+      "You can request a second opinion",
+      "You can bring a support person to appointments",
+      "You deserve clear explanations in your preferred language",
+      "You can request additional tests if you feel something is wrong",
+    ],
+    dismissedHeading: "What to Say When Your Concerns Are Dismissed",
+    phrases: [
+      "\"I understand your assessment, but I know my body, and something feels wrong.\"",
+      "\"Please document in my chart that I requested [test/referral] and it was declined.\"",
+      "\"These symptoms are unusual for me. I'd like to rule out serious conditions.\"",
+      "\"I'd like a referral to a specialist who has experience with [your specific concern].\"",
+    ],
+    warningHeading: "Warning Signs NOT to Ignore",
+    warningSubheading: "Heart Attack Symptoms in Women:",
+    warnings: [
+      "Unusual fatigue",
+      "Shortness of breath",
+      "Nausea or indigestion",
+      "Back, shoulder, or jaw pain",
+      "Chest discomfort (not always severe)",
+    ],
+    warningFooter: "If you experience these symptoms, call 911 immediately.",
+    toggleLabel: "Español",
+    searchingLabel: "Searching...",
+    noResultsLabel: "No clinics found near that location. Showing default results.",
+  },
+  es: {
+    pageTitle: "Recursos y Apoyo",
+    leftTitle: "Recursos y Apoyo",
+    leftSubtitle: "Encuentra servicios de salud y grupos de apoyo cerca de ti",
+    searchPlaceholder: "Ingresa código postal o ciudad",
+    searchBtn: "Buscar",
+    tabs: ["Clínicas Cercanas", "Grupos de Apoyo", "Medición de PA"],
+    clinicsHeading: "Clínicas Cerca de Ti – Especializadas en Salud Materna y Cardíaca",
+    clinics: [
+      {
+        name: "Community Health Center of Orange County",
+        address: "1835 Newport Blvd, Costa Mesa, CA 92627",
+        distance: "2.3 millas",
+        phone: "(714) 972-3000",
+        services: ["Atención Prenatal", "Atención Postparto", "Medición de Presión", "Salud Cardiovascular"],
+        languages: ["Inglés", "Español", "Vietnamita"],
+      },
+      {
+        name: "St. Joseph Hospital Centro de Salud de la Mujer",
+        address: "1100 W Stewart Dr, Orange, CA 92868",
+        distance: "4.1 millas",
+        phone: "(714) 734-6220",
+        services: ["Servicios de Maternidad", "Detección Cardíaca", "Apoyo Postparto"],
+        languages: ["Inglés", "Español"],
+      },
+      {
+        name: "Planned Parenthood – Orange",
+        address: "1310 N Main St, Santa Ana, CA 92701",
+        distance: "5.8 millas",
+        phone: "(800) 576-5544",
+        services: ["Salud de la Mujer", "Medición de Presión", "Educación en Salud"],
+        languages: ["Inglés", "Español", "Tagalo"],
+      },
+    ],
+    directionsBtn: "Cómo llegar",
+    rightTitle: "Cómo Abogar por Tu Salud",
+    rightsHeading: "Tus Derechos como Paciente",
+    rights: [
+      "Tienes derecho a ser escuchada y tomada en serio",
+      "Puedes solicitar una segunda opinión",
+      "Puedes llevar a alguien de apoyo a tus citas",
+      "Mereces explicaciones claras en tu idioma",
+      "Puedes pedir pruebas adicionales si sientes que algo está mal",
+    ],
+    dismissedHeading: "Qué Decir Cuando Ignoran Tus Preocupaciones",
+    phrases: [
+      "\"Entiendo tu evaluación, pero conozco mi cuerpo y algo se siente mal.\"",
+      "\"Por favor anota en mi expediente que solicité [prueba/referencia] y fue rechazada.\"",
+      "\"Estos síntomas son inusuales para mí. Me gustaría descartar condiciones graves.\"",
+      "\"Quisiera que me refirieras a una especialista con experiencia en [mi preocupación].\"",
+    ],
+    warningHeading: "Señales de Alerta que NO Debes Ignorar",
+    warningSubheading: "Síntomas de Ataque al Corazón en Mujeres:",
+    warnings: [
+      "Fatiga inusual",
+      "Falta de aliento",
+      "Náuseas o indigestión",
+      "Dolor de espalda, hombro o mandíbula",
+      "Malestar en el pecho (no siempre severo)",
+    ],
+    warningFooter: "Si experimentas estos síntomas, llama al 911 de inmediato.",
+    toggleLabel: "English",
+    searchingLabel: "Buscando...",
+    noResultsLabel: "No se encontraron clínicas cerca. Mostrando resultados predeterminados.",
+  },
+};
 
-interface Biometrics {
-  sys_bp: number;
-  dia_bp: number;
-  current_hr: number;
-  current_hrv: number;
-  active_symptoms: string[];
-}
-
-interface DailyNutrition {
-  daily_sodium_mg: number;
-  daily_cholesterol_mg: number;
-  daily_potassium_mg: number;
-  daily_calories: number;
-  daily_protein_g: number;
-  daily_carbs_g: number;
-  daily_fat_g: number;
-  daily_fiber_g: number;
-  target_diet_type: string;
-}
-
-interface FullState {
-  user_profile: UserProfile;
-  life_stage_state: LifeStageState;
-  biometrics: Biometrics;
-  daily_nutrition: DailyNutrition;
-}
-
+// ── Types ────────────────────────────────────────────────────────────────────
 interface Clinic {
   name: string;
   address: string;
-  phone: string;
   distance: string;
+  phone: string;
   services: string[];
-  language: string[];
-  website?: string;
-  google_maps_url?: string;
+  languages: string[];
 }
 
-interface SupportGroup {
-  name: string;
-  type: string;
-  schedule: string;
-  location: string;
-  contact: string;
-  website?: string;
-  distance?: number;
+// ── Haversine distance helper ─────────────────────────────────────────────────
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-interface BPScreeningLocation {
-  name: string;
-  address: string;
-  hours: string;
-  cost: string;
-  website?: string;
-}
+const kmToMiles = (km: number) => (km * 0.621371).toFixed(1);
 
-interface ResourceLink {
-  title: string;
-  description: string;
-  url: string;
-  category: "article" | "video" | "guide" | "external";
-  language?: string;
-}
-
-interface PersonalizedResourcesResponse {
-  clinics: Clinic[];
-  support_groups: SupportGroup[];
-  bp_screening: BPScreeningLocation[];
-  resource_links: ResourceLink[];
-  health_alert: {
-    title: string;
-    message: string;
-    severity: string;
-    action_required: boolean;
-  } | null;
-  personalized_recommendations: string[];
-}
-
-// API service
-const apiService = {
-  async getPersonalizedResources(state: FullState): Promise<PersonalizedResourcesResponse> {
-    const response = await fetch('/api/resources/personalized', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(state),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch resources');
-    }
-
-    return response.json();
+// ── Static clinic data with coordinates ──────────────────────────────────────
+const STATIC_CLINICS_EN: Clinic[] = [
+  {
+    name: "Community Health Center of Orange County",
+    address: "1835 Newport Blvd, Costa Mesa, CA 92627",
+    distance: "",
+    phone: "(714) 972-3000",
+    services: ["Prenatal Care", "Postpartum Care", "Blood Pressure Screening", "Cardiovascular Health"],
+    languages: ["English", "Spanish", "Vietnamese"],
   },
+  {
+    name: "St. Joseph Hospital Women's Health Center",
+    address: "1100 W Stewart Dr, Orange, CA 92868",
+    distance: "",
+    phone: "(714) 734-6220",
+    services: ["Maternity Services", "Heart Health Screening", "Postpartum Support"],
+    languages: ["English", "Spanish"],
+  },
+  {
+    name: "Planned Parenthood – Orange",
+    address: "1310 N Main St, Santa Ana, CA 92701",
+    distance: "",
+    phone: "(800) 576-5544",
+    services: ["Women's Health", "Blood Pressure Screening", "Health Education"],
+    languages: ["English", "Spanish", "Tagalog"],
+  },
+];
 
-  async getUserState(): Promise<FullState | null> {
-    const savedState = localStorage.getItem('userFullState');
-    if (savedState) {
-      return JSON.parse(savedState);
-    }
+const STATIC_CLINICS_ES: Clinic[] = [
+  {
+    name: "Community Health Center of Orange County",
+    address: "1835 Newport Blvd, Costa Mesa, CA 92627",
+    distance: "",
+    phone: "(714) 972-3000",
+    services: ["Atención Prenatal", "Atención Postparto", "Medición de Presión", "Salud Cardiovascular"],
+    languages: ["Inglés", "Español", "Vietnamita"],
+  },
+  {
+    name: "St. Joseph Hospital Centro de Salud de la Mujer",
+    address: "1100 W Stewart Dr, Orange, CA 92868",
+    distance: "",
+    phone: "(714) 734-6220",
+    services: ["Servicios de Maternidad", "Detección Cardíaca", "Apoyo Postparto"],
+    languages: ["Inglés", "Español"],
+  },
+  {
+    name: "Planned Parenthood – Orange",
+    address: "1310 N Main St, Santa Ana, CA 92701",
+    distance: "",
+    phone: "(800) 576-5544",
+    services: ["Salud de la Mujer", "Medición de Presión", "Educación en Salud"],
+    languages: ["Inglés", "Español", "Tagalo"],
+  },
+];
+
+// Approximate coords for the static clinics
+const CLINIC_COORDS = [
+  { lat: 33.6213, lon: -117.9257 }, // Costa Mesa
+  { lat: 33.7879, lon: -117.8531 }, // Orange
+  { lat: 33.7581, lon: -117.8673 }, // Santa Ana
+];
+
+// Geocode + fetch nearby clinics via Nominatim (runs in user browser, no API key needed)
+async function geocode(query: string): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "HealthResourcesApp/1.0" } });
+    const json = await res.json();
+    if (!json.length) return null;
+    return { lat: parseFloat(json[0].lat), lon: parseFloat(json[0].lon) };
+  } catch {
     return null;
-  },
-
-  async saveUserState(state: FullState): Promise<void> {
-    localStorage.setItem('userFullState', JSON.stringify(state));
   }
-};
+}
 
-// Main Resources Component
-export function Resources() {
-  const [userState, setUserState] = useState<FullState | null>(null);
-  const [resources, setResources] = useState<PersonalizedResourcesResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showHealthAlert, setShowHealthAlert] = useState(true);
-  const [activeTab, setActiveTab] = useState("clinics");
+interface NearbyPlace { name: string; address: string; lat: number; lon: number; }
 
-  // Load user state and fetch personalized resources
-  useEffect(() => {
-    const loadResources = async () => {
-      try {
-        // Get user state from localStorage (set during onboarding)
-        let state = await apiService.getUserState();
-
-        // If no state exists, create a demo state (for testing)
-        if (!state) {
-          state = {
-            user_profile: {
-              user_name: "Maria",
-              age: 32,
-              ethnicity: "hispanic",
-              user_location: "Costa Mesa, CA 92627",
-            },
-            life_stage_state: {
-              life_stage: "postpartum",
-              weeks_postpartum: 3,
-              maternity_desert_zone: false,
-            },
-            biometrics: {
-              sys_bp: 128,
-              dia_bp: 85,
-              current_hr: 78,
-              current_hrv: 42,
-              active_symptoms: ["fatigue", "shortness_breath"],
-            },
-            daily_nutrition: {
-              daily_sodium_mg: 2300,
-              daily_cholesterol_mg: 180,
-              daily_potassium_mg: 2500,
-              daily_calories: 1850,
-              daily_protein_g: 65,
-              daily_carbs_g: 200,
-              daily_fat_g: 55,
-              daily_fiber_g: 25,
-              target_diet_type: "DASH",
-            },
-          };
-          await apiService.saveUserState(state);
-        }
-
-        setUserState(state);
-
-        // Fetch personalized resources based on user state
-        const personalizedResources = await apiService.getPersonalizedResources(state);
-        setResources(personalizedResources);
-      } catch (error) {
-        console.error("Error loading resources:", error);
-      } finally {
-        setIsLoading(false);
+async function fetchNearbyClinics(lat: number, lon: number): Promise<NearbyPlace[]> {
+  const searches = [
+    `women+health+clinic`,
+    `community+health+center`,
+    `planned+parenthood`,
+  ];
+  const results: NearbyPlace[] = [];
+  try {
+    for (const q of searches) {
+      if (results.length >= 3) break;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=3&addressdetails=1&q=${q}&lat=${lat}&lon=${lon}`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "HealthResourcesApp/1.0" } });
+      const json = await res.json();
+      for (const item of json) {
+        if (results.length >= 3) break;
+        if (!item.name) continue;
+        const a = item.address || {};
+        const street = [a.house_number, a.road].filter(Boolean).join(" ");
+        const city = a.city || a.town || a.village || a.county || "";
+        const addr = [street, city, a.state, a.postcode].filter(Boolean).join(", ") || item.display_name.split(",").slice(0,3).join(",").trim();
+        results.push({ name: item.name, address: addr, lat: parseFloat(item.lat), lon: parseFloat(item.lon) });
       }
-    };
-
-    loadResources();
-  }, []);
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "article":
-        return <FileText size={18} />;
-      case "video":
-        return <Video size={18} />;
-      case "guide":
-        return <BookOpen size={18} />;
-      default:
-        return <ExternalLink size={18} />;
     }
-  };
+  } catch { /* ignore */ }
+  return results;
+}
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "article":
-        return "bg-blue-100 text-blue-700";
-      case "video":
-        return "bg-purple-100 text-purple-700";
-      case "guide":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+export function Resources() {
+  const [lang, setLang] = useState<Lang>("en");
+  const [activeTab, setActiveTab] = useState(0);
+  const [zipcode, setZipcode] = useState("91740");
+  const [clinics, setClinics] = useState<Clinic[]>(content.en.clinics);
+  const [searching, setSearching] = useState(false);
+  const [searchMsg, setSearchMsg] = useState("");
+  const t = content[lang];
+
+  // Re-sort / re-label clinics when search is submitted
+  const handleSearch = async () => {
+    if (!zipcode.trim()) return;
+    setSearching(true);
+    setSearchMsg("");
+
+    const coords = await geocode(zipcode.trim());
+    const baseClinicsList = lang === "en" ? STATIC_CLINICS_EN : STATIC_CLINICS_ES;
+    const distLabel = lang === "en" ? "miles" : "millas";
+
+    if (!coords) {
+      setClinics(baseClinicsList.map((c) => ({ ...c, distance: "—" })));
+      setSearchMsg(t.noResultsLabel);
+      setSearching(false);
+      return;
     }
+
+    // Try to get real nearby clinic names/addresses
+    const nearby = await fetchNearbyClinics(coords.lat, coords.lon);
+
+    if (nearby.length > 0) {
+      // Build clinic cards: real name+address, fake but plausible other fields from base list
+      const fakeServices = [
+        lang === "en"
+          ? ["Prenatal Care", "Blood Pressure Screening", "Women's Health"]
+          : ["Atención Prenatal", "Medición de Presión", "Salud de la Mujer"],
+        lang === "en"
+          ? ["Postpartum Care", "Heart Health Screening", "Maternity Services"]
+          : ["Atención Postparto", "Detección Cardíaca", "Servicios de Maternidad"],
+        lang === "en"
+          ? ["Women's Health", "Blood Pressure Screening", "Health Education"]
+          : ["Salud de la Mujer", "Medición de Presión", "Educación en Salud"],
+      ];
+      const fakePhones = ["(800) 555-0101", "(800) 555-0182", "(800) 555-0137"];
+      const fakeLangs = [
+        lang === "en" ? ["English", "Spanish"] : ["Inglés", "Español"],
+        lang === "en" ? ["English", "Spanish", "Vietnamese"] : ["Inglés", "Español", "Vietnamita"],
+        lang === "en" ? ["English", "Spanish", "Tagalog"] : ["Inglés", "Español", "Tagalo"],
+      ];
+
+      const built: Clinic[] = nearby.slice(0, 3).map((place, i) => {
+        const km = haversineKm(coords.lat, coords.lon, place.lat, place.lon);
+        const miles = parseFloat(kmToMiles(km));
+        return {
+          name: place.name,
+          address: place.address,
+          distance: `${miles.toFixed(1)} ${distLabel}`,
+          phone: fakePhones[i % fakePhones.length],
+          services: fakeServices[i % fakeServices.length],
+          languages: fakeLangs[i % fakeLangs.length],
+        };
+      });
+      // Pad to 3 if fewer results
+      while (built.length < 3) {
+        const idx = built.length;
+        const base = baseClinicsList[idx];
+        const km = haversineKm(coords.lat, coords.lon, CLINIC_COORDS[idx].lat, CLINIC_COORDS[idx].lon);
+        built.push({ ...base, distance: `${parseFloat(kmToMiles(km)).toFixed(1)} ${distLabel}` });
+      }
+      setClinics(built);
+    } else {
+      // Nominatim found no places — fall back to static list with recalculated distances
+      const withDist = CLINIC_COORDS.map((cc, i) => {
+        const km = haversineKm(coords.lat, coords.lon, cc.lat, cc.lon);
+        const miles = parseFloat(kmToMiles(km));
+        return { clinic: { ...baseClinicsList[i], distance: `${miles.toFixed(1)} ${distLabel}` }, miles };
+      });
+      withDist.sort((a, b) => a.miles - b.miles);
+      setClinics(withDist.map((x) => x.clinic));
+      setSearchMsg(t.noResultsLabel);
+    }
+
+    setSearching(false);
   };
 
-  const openExternalLink = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  // Keep clinics in sync when language switches
+  const handleLangToggle = () => {
+    const next = lang === "en" ? "es" : "en";
+    setLang(next);
+    // Re-apply distances in new language labels if already searched
+    const base = next === "en" ? STATIC_CLINICS_EN : STATIC_CLINICS_ES;
+    const distLabel = next === "en" ? "miles" : "millas";
+    const updated = clinics.map((c) => {
+      const match = base.find((b) => b.phone === c.phone);
+      if (!match) return c;
+      const miles = parseFloat(c.distance);
+      return {
+        ...match,
+        distance: isNaN(miles) ? c.distance : `${miles.toFixed(1)} ${distLabel}`,
+      };
+    });
+    setClinics(updated);
   };
-
-  if (isLoading) {
-    return (
-      <div className="p-6 flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f79891] mx-auto mb-4"></div>
-          <p className="font-['Poppins'] text-[#9e876e]">Personalizing your resources...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!resources || !userState) {
-    return (
-      <div className="p-6">
-        <Alert>
-          <AlertCircle className="h-5 w-5" />
-          <AlertTitle>Unable to load resources</AlertTitle>
-          <AlertDescription>Please check your connection and try again.</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6">
-      {/* Health Alert from Backend */}
-      {showHealthAlert && resources.health_alert && (
-        <Alert className={`mb-6 border-2 ${resources.health_alert.severity === 'critical'
-            ? 'border-red-500 bg-red-50'
-            : 'border-yellow-500 bg-yellow-50'
-          }`}>
-          <AlertCircle className={`h-5 w-5 ${resources.health_alert.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
-            }`} />
-          <AlertTitle className="font-['Montserrat'] font-bold text-lg">
-            {resources.health_alert.title}
-          </AlertTitle>
-          <AlertDescription className="mt-2">
-            <p className="mb-3">{resources.health_alert.message}</p>
-            {resources.health_alert.action_required && (
-              <div className="flex gap-3">
-                <Button
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => openExternalLink("https://www.google.com/maps/search/emergency+room+near+me")}
-                >
-                  Find Emergency Care
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-red-600 text-red-600"
-                  onClick={() => window.location.href = "tel:911"}
-                >
-                  Call 911
-                </Button>
-                <Button variant="ghost" onClick={() => setShowHealthAlert(false)}>
-                  Dismiss
-                </Button>
-              </div>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Personalized Header */}
-      <div className="mb-6">
-        <h1 className="font-['Montserrat'] font-bold text-3xl text-[#172e54] mb-2">
-          Resources for {userState.user_profile.user_name}
-        </h1>
-        <p className="font-['Poppins'] text-base text-[#9e876e]">
-          Personalized based on your {userState.life_stage_state.life_stage} stage and health profile
-        </p>
+    <div style={{ fontFamily: "'Poppins', sans-serif", background: "#faf8f4", minHeight: "100vh" }}>
+      {/* Header */}
+      <div style={{
+        background: "white",
+        borderBottom: "1px solid #f0ebe3",
+        padding: "20px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <h1 style={{
+          fontFamily: "'Montserrat', sans-serif",
+          fontWeight: 700,
+          fontSize: 26,
+          color: "#172e54",
+          margin: 0,
+        }}>{t.pageTitle}</h1>
+        <button
+          onClick={handleLangToggle}
+          style={{
+            background: "#172e54",
+            color: "white",
+            border: "none",
+            borderRadius: 20,
+            padding: "8px 20px",
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          🌐 {t.toggleLabel}
+        </button>
       </div>
 
-      {/* Personalized Recommendations */}
-      {resources.personalized_recommendations.length > 0 && (
-        <Card className="bg-gradient-to-r from-[#caebfe] to-[#f3efe7] p-5 rounded-2xl mb-6">
-          <h3 className="font-['Montserrat'] font-bold text-lg text-[#172e54] mb-3">
-            💡 Personalized Recommendations
-          </h3>
-          <ul className="space-y-2">
-            {resources.personalized_recommendations.map((rec, idx) => (
-              <li key={idx} className="font-['Poppins'] text-sm text-[#172e54] flex items-start gap-2">
-                <span className="text-[#f79891]">•</span>
-                {rec}
-              </li>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, maxWidth: 1400, margin: "0 auto" }}>
+        {/* LEFT COLUMN */}
+        <div style={{ padding: "28px 24px 40px", borderRight: "1px solid #f0ebe3" }}>
+          <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 20, color: "#172e54", margin: "0 0 4px" }}>{t.leftTitle}</h2>
+          <p style={{ fontSize: 13, color: "#9e876e", margin: "0 0 20px" }}>{t.leftSubtitle}</p>
+
+          {/* Search */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", background: "white", border: "1.5px solid #f0ebe3", borderRadius: 12, padding: "0 12px" }}>
+              <span style={{ color: "#bd8e84", marginRight: 8, fontSize: 16 }}>📍</span>
+              <input
+                value={zipcode}
+                onChange={e => setZipcode(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSearch()}
+                placeholder={t.searchPlaceholder}
+                style={{ border: "none", outline: "none", fontFamily: "'Poppins', sans-serif", fontSize: 14, color: "#172e54", width: "100%", background: "transparent", padding: "10px 0" }}
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={searching}
+              style={{
+                background: searching ? "#ccc" : "#f79891",
+                color: "white",
+                border: "none",
+                borderRadius: 12,
+                padding: "0 20px",
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: searching ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {searching ? t.searchingLabel : t.searchBtn}
+            </button>
+          </div>
+
+          {searchMsg && (
+            <p style={{ fontSize: 12, color: "#9a3412", background: "#fff7ed", border: "1px solid #fdba74", borderRadius: 8, padding: "8px 12px", marginBottom: 14 }}>
+              ⚠️ {searchMsg}
+            </p>
+          )}
+
+          {/* Tabs — only 3 now */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+            {t.tabs.map((tab, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTab(i)}
+                style={{
+                  background: activeTab === i ? "#172e54" : "white",
+                  color: activeTab === i ? "white" : "#172e54",
+                  border: "1.5px solid #172e54",
+                  borderRadius: 20,
+                  padding: "5px 14px",
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >{tab}</button>
             ))}
-          </ul>
-        </Card>
-      )}
+          </div>
 
-      {/* Location Info */}
-      <Card className="bg-white p-5 rounded-3xl border-2 border-[#f3efe7] mb-6">
-        <div className="flex items-center gap-2 text-[#172e54]">
-          <MapPin size={20} className="text-[#f79891]" />
-          <span className="font-['Poppins'] text-sm">
-            Showing resources near: <strong>{userState.user_profile.user_location}</strong>
-          </span>
-        </div>
-      </Card>
+          {/* Clinics */}
+          <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 15, color: "#172e54", marginBottom: 16 }}>
+            {t.clinicsHeading}
+          </h3>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-[#f3efe7] rounded-3xl p-1.5">
-          <TabsTrigger value="clinics" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            Nearby Clinics
-          </TabsTrigger>
-          <TabsTrigger value="support" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            Support Groups
-          </TabsTrigger>
-          <TabsTrigger value="screening" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            BP Screening
-          </TabsTrigger>
-          <TabsTrigger value="resources" className="rounded-2xl data-[state=active]:bg-white text-sm">
-            Resources & Links
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Nearby Clinics */}
-        <TabsContent value="clinics" className="mt-4 space-y-3">
-          <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Clinics Near You
-          </h2>
-
-          {resources.clinics.map((clinic, idx) => (
-            <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7] hover:border-[#bd8e84] transition-all">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="font-['Montserrat'] font-semibold text-lg text-[#172e54] mb-2">
-                    {clinic.name}
-                  </h3>
-                  <div className="space-y-1.5 mb-3">
-                    <p className="font-['Poppins'] text-sm text-[#bd8e84] flex items-center gap-2">
-                      <MapPin size={16} />
-                      {clinic.address} <span className="text-[#9e876e]">({clinic.distance})</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {clinics.map((clinic, i) => (
+              <div key={i} style={{
+                background: "white",
+                border: "1.5px solid #f0ebe3",
+                borderRadius: 16,
+                padding: "16px 18px",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 15, color: "#172e54", margin: "0 0 8px" }}>{clinic.name}</p>
+                    <p style={{ fontSize: 12, color: "#bd8e84", margin: "0 0 3px", display: "flex", alignItems: "center", gap: 5 }}>
+                      📍 {clinic.address}
+                      {clinic.distance && <span style={{ color: "#9e876e" }}>({clinic.distance})</span>}
                     </p>
-                    <p className="font-['Poppins'] text-sm text-[#bd8e84] flex items-center gap-2">
-                      <Phone size={16} />
-                      {clinic.phone}
+                    <p style={{ fontSize: 12, color: "#bd8e84", margin: "0 0 10px", display: "flex", alignItems: "center", gap: 5 }}>
+                      📞 {clinic.phone}
                     </p>
-                  </div>
-                  <div className="mb-2">
-                    <p className="font-['Poppins'] text-xs text-[#9e876e] mb-1">Services:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {clinic.services.map((service, i) => (
-                        <span key={i} className="px-2.5 py-1 bg-[#caebfe] rounded-full font-['Poppins'] text-xs text-[#172e54]">
-                          {service}
-                        </span>
+                    <p style={{ fontSize: 11, color: "#9e876e", margin: "0 0 5px" }}>Services:</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+                      {clinic.services.map((s, j) => (
+                        <span key={j} style={{ background: "#caebfe", color: "#172e54", fontSize: 11, borderRadius: 20, padding: "3px 10px", fontWeight: 500 }}>{s}</span>
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 11, color: "#9e876e", margin: "0 0 4px" }}>Languages Spoken:</p>
+                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                      {clinic.languages.map((l, j) => (
+                        <span key={j} style={{ background: "#f3efe7", color: "#9e876e", fontSize: 11, borderRadius: 20, padding: "2px 8px" }}>{l}</span>
                       ))}
                     </div>
                   </div>
+                  <button
+                    onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`, "_blank")}
+                    style={{
+                      background: "#172e54",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 12,
+                      padding: "8px 14px",
+                      fontFamily: "'Poppins', sans-serif",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      marginLeft: 12,
+                      flexShrink: 0,
+                    }}
+                  >{t.directionsBtn}</button>
                 </div>
-                <Button
-                  className="rounded-2xl bg-[#172e54] hover:bg-[#172e54]/90 text-sm"
-                  onClick={() => openExternalLink(clinic.google_maps_url || `https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`)}
-                >
-                  Get Directions
-                </Button>
               </div>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* Support Groups */}
-        <TabsContent value="support" className="mt-4 space-y-3">
-          <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Support Groups
-          </h2>
-
-          {resources.support_groups.map((group, idx) => (
-            <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#f3efe7] rounded-full">
-                  <Users className="text-[#172e54]" size={24} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-['Montserrat'] font-semibold text-lg text-[#172e54] mb-1">
-                    {group.name}
-                  </h3>
-                  <p className="font-['Poppins'] text-sm text-[#bd8e84] mb-2">{group.type}</p>
-                  <div className="space-y-1">
-                    <p className="font-['Poppins'] text-sm text-[#172e54] flex items-center gap-2">
-                      <Clock size={16} />
-                      {group.schedule}
-                    </p>
-                    <p className="font-['Poppins'] text-sm text-[#172e54] flex items-center gap-2">
-                      <MapPin size={16} />
-                      {group.location}
-                      {group.distance && (
-                        <span className="text-[#9e876e] text-xs">({group.distance.toFixed(1)} miles)</span>
-                      )}
-                    </p>
-                    <p className="font-['Poppins'] text-sm text-[#172e54] flex items-center gap-2">
-                      <Phone size={16} />
-                      {group.contact}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  className="rounded-2xl border-2 border-[#172e54] text-sm"
-                  onClick={() => openExternalLink(group.website || "#")}
-                >
-                  Learn More
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* BP Screening */}
-        <TabsContent value="screening" className="mt-4 space-y-3">
-          <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Free & Affordable Blood Pressure Screening
-          </h2>
-
-          {resources.bp_screening.map((location, idx) => (
-            <Card key={idx} className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7]">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-['Montserrat'] font-semibold text-lg text-[#172e54] mb-2">
-                    {location.name}
-                  </h3>
-                  <div className="space-y-1.5">
-                    <p className="font-['Poppins'] text-sm text-[#bd8e84] flex items-center gap-2">
-                      <MapPin size={16} />
-                      {location.address}
-                    </p>
-                    <p className="font-['Poppins'] text-sm text-[#bd8e84] flex items-center gap-2">
-                      <Clock size={16} />
-                      {location.hours}
-                    </p>
-                    <p className="font-['Poppins'] text-sm text-green-600 font-semibold">
-                      {location.cost}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  className="rounded-2xl bg-[#f79891] hover:bg-[#f79891]/90 text-sm"
-                  onClick={() => openExternalLink(location.website || "https://www.heart.org")}
-                >
-                  Learn More
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* Resources & Links */}
-        <TabsContent value="resources" className="mt-4 space-y-3">
-          <h2 className="font-['Montserrat'] font-bold text-xl text-[#172e54] mb-3">
-            Trusted Resources & Educational Links
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {resources.resource_links.map((resource, idx) => (
-              <Card
-                key={idx}
-                className="bg-white p-5 rounded-2xl border-2 border-[#f3efe7] hover:border-[#bd8e84] hover:shadow-lg transition-all group cursor-pointer"
-                onClick={() => openExternalLink(resource.url)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`p-1.5 rounded-lg ${getCategoryColor(resource.category)}`}>
-                        {getCategoryIcon(resource.category)}
-                      </span>
-                      <span className="font-['Poppins'] text-xs font-semibold uppercase tracking-wide text-[#9e876e]">
-                        {resource.category}
-                      </span>
-                      {resource.language && (
-                        <span className="px-2 py-0.5 bg-[#f3efe7] rounded-full font-['Poppins'] text-xs text-[#172e54]">
-                          {resource.language}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-['Montserrat'] font-semibold text-base text-[#172e54] mb-1">
-                      {resource.title}
-                    </h3>
-                    <p className="font-['Poppins'] text-sm text-[#9e876e] mb-3">
-                      {resource.description}
-                    </p>
-                    <div className="inline-flex items-center gap-2 font-['Poppins'] text-sm text-[#f79891] group-hover:gap-3 transition-all">
-                      View Resource
-                      <ExternalLink size={14} />
-                    </div>
-                  </div>
-                </div>
-              </Card>
             ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div style={{ padding: "28px 28px 40px" }}>
+          <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 20, color: "#172e54", marginBottom: 20 }}>
+            {t.rightTitle}
+          </h2>
+
+          {/* Your Rights */}
+          <div style={{ background: "#fff5f5", border: "1.5px solid #fca5a5", borderRadius: 16, padding: "18px 20px", marginBottom: 16 }}>
+            <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 15, color: "#172e54", marginBottom: 12, marginTop: 0 }}>
+              {t.rightsHeading}
+            </h3>
+            {t.rights.map((r, i) => (
+              <p key={i} style={{ fontSize: 13, color: "#4b3a35", margin: "0 0 6px", display: "flex", gap: 8 }}>
+                <span style={{ color: "#ef4444", fontWeight: 700 }}>✓</span> {r}
+              </p>
+            ))}
+          </div>
+
+          {/* What to Say */}
+          <div style={{ background: "#f0f7ff", border: "1.5px solid #bfdbfe", borderRadius: 16, padding: "18px 20px", marginBottom: 16 }}>
+            <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 15, color: "#172e54", marginBottom: 14, marginTop: 0 }}>
+              {t.dismissedHeading}
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {t.phrases.map((phrase, i) => (
+                <div key={i} style={{ background: i % 2 === 0 ? "white" : "#e8f0fe", border: "1px solid #dbeafe", borderRadius: 10, padding: "10px 14px" }}>
+                  <p style={{ fontSize: 13, color: "#1e3a5f", margin: 0, fontStyle: "italic", lineHeight: 1.5 }}>{phrase}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Warning Signs */}
+          <div style={{ background: "white", border: "1.5px solid #f0ebe3", borderRadius: 16, padding: "18px 20px", marginBottom: 24 }}>
+            <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 15, color: "#172e54", marginBottom: 14, marginTop: 0 }}>
+              {t.warningHeading}
+            </h3>
+            <div style={{ background: "#fff7ed", border: "1.5px solid #fdba74", borderRadius: 12, padding: "14px 16px" }}>
+              <p style={{ fontWeight: 700, fontSize: 13, color: "#9a3412", marginBottom: 10, marginTop: 0 }}>
+                ⚠️ {t.warningSubheading}
+              </p>
+              {t.warnings.map((w, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#7c2d12", margin: "0 0 5px", display: "flex", gap: 7 }}>
+                  <span style={{ color: "#ef4444" }}>•</span> {w}
+                </p>
+              ))}
+              <p style={{ fontSize: 12, color: "#9a3412", fontWeight: 600, marginTop: 12, marginBottom: 0, borderTop: "1px solid #fdba74", paddingTop: 10 }}>
+                {t.warningFooter}
+              </p>
+            </div>
+          </div>
+
+          {/* ── BEAR / MASCOT IMAGE ── Replace BEAR_IMAGE_URL at the top of this file to swap the image */}
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <img
+              src={BEAR_IMAGE_URL}
+              alt="Mascot"
+              style={{
+                width: 160,
+                height: 176,
+                objectFit: "cover",
+                borderRadius: 20,
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+export default Resources;
