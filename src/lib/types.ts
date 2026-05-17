@@ -92,12 +92,18 @@ export interface NutritionToday {
 
 export interface BarcodeLookupResult {
   found: boolean;
-  source: "openfoodfacts" | "llm_estimate" | "not_found";
+  source:
+    | "openfoodfacts"
+    | "usda_fdc_barcode"
+    | "usda_fdc_name"
+    | "llm_estimate"
+    | "not_found";
   name: string;
   dash_bucket: DashBucket;
   nutrients: MealNutrients;
   barcode: string;
   confidence: number;
+  data_quality: number;
   notes?: string | null;
 }
 

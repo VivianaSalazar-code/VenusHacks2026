@@ -54,6 +54,8 @@ export const api = {
     const qs = nameHint ? `?name_hint=${encodeURIComponent(nameHint)}` : "";
     return request<BarcodeLookupResult>(`/api/nutrition/barcode/${encodeURIComponent(barcode)}${qs}`);
   },
+  lookupByName: (q: string) =>
+    request<BarcodeLookupResult>(`/api/nutrition/lookup_name?q=${encodeURIComponent(q)}`),
 
   // --- chat ---
   sendChat: (message: string, language: "en" | "es" = "en") =>
